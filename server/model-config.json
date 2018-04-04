@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "sources": [
+      "../common/models"
+    ],
+    "mixins": [
+    ]
+  },
+  "NodeRedFlow": {
+    "dataSource": "db",
+    "public": true
+  },
+  "NodeRedCred": {
+    "dataSource": "db",
+    "public": true
+  }
+
+}
