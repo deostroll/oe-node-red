@@ -29,9 +29,30 @@ module.exports = function startNodeRed(server1, callback) {
 
     // Create an Express app
     var app = express();
-
+    app.registry = loopback.registry;
+    
+    var pre_auth_params = {
+        "excludeHeadersList": [
+            "host",
+            "accept-encoding",
+            "accept",
+            "content-type",
+            "content-length",
+            "connection",
+            "user-agent",
+            "x-jwt-assertion",
+            "cookie",
+            "if-none-match"
+        ],
+        "queryStringContext": [
+            "device-type",
+            "location",
+            "language",
+            "tenant-id"
+        ]
+    };
     var pre_auth = require('../../../oe-cloud/server/middleware/pre-auth-context-populator.js');
-    app.use(pre_auth({}));
+    app.use(pre_auth(pre_auth_params));
 
     var AuthSession = loopback.getModelByType('AuthSession');
     app.use(loopback.token({
@@ -60,7 +81,7 @@ module.exports = function startNodeRed(server1, callback) {
     if (server1.get('enableNodeRedAdminRole') === true) {
         var nodeRedAdminRoles = server1.get('nodeRedAdminRoles') ? server1.get('nodeRedAdminRoles') : ["NODE_RED_ADMIN"];
         app.use(function (req, res, next) {
-            if (!isNodeRedAdmin(req, nodeRedAdminRoles)) {
+            if (req.url.startsWith("/red") &&  !isNodeRedAdmin(req, nodeRedAdminRoles)) {
                 return res.status(401).json({
                     error: 'unauthorized'
                 });
