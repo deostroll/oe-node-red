@@ -10,15 +10,18 @@ var broadcasterClient = require('../../../oe-cloud/lib/common/broadcaster-client
 var uuidv4 = require('uuid/v4');
 
 var NodeRedFlows = loopback.getModelByType('NodeRedFlow');
-var options = {ignoreAutoScope: true, fetchAllScopes: true};
+var options = {
+    ignoreAutoScope: true,
+    fetchAllScopes: true
+};
 
 
 module.exports = function startNodeRed(server1, callback) {
     callback();
 
     var _createNode = RED.nodes.createNode;
-    RED.nodes.createNode = function(thisnode, config) {
-        thisnode.on('input', function(msg) {
+    RED.nodes.createNode = function (thisnode, config) {
+        thisnode.on('input', function (msg) {
             msg.callContext = config.callContext;
         });
         _createNode(thisnode, config);
@@ -52,9 +55,22 @@ module.exports = function startNodeRed(server1, callback) {
     if (!settings) return;
 
     var projectsEnabled = settings.editorTheme && settings.editorTheme.projects && settings.editorTheme.projects.enabled === true;
+    var flowScope = server1.get('nodeRedUserScope') === true ? 'remoteUser' : 'tenantId';
 
-    if(!projectsEnabled) 
-    {
+    if (server1.get('enableNodeRedAdminRole') === true) {
+        var nodeRedAdminRoles = server1.get('nodeRedAdminRoles') ? server1.get('nodeRedAdminRoles') : ["NODE_RED_ADMIN"];
+        app.use(function (req, res, next) {
+            if (!isNodeRedAdmin(req, nodeRedAdminRoles)) {
+                return res.status(401).json({
+                    error: 'unauthorized'
+                });
+            }
+            next();
+        });
+    }
+
+
+    if (!projectsEnabled) {
         NodeRedFlows.observe('after save', function flowModelAfterSave(ctx, next) {
             next();
             messaging.publish('reloadNodeRedFlows', uuidv4());
@@ -68,15 +84,15 @@ module.exports = function startNodeRed(server1, callback) {
             if (req.url.startsWith("/red/flows")) {
                 if (req.method === "POST") {
                     NodeRedFlows.find({}, options, function findCb(err, results) {
-                        if(err) console.log(err);
-                        if(!results) results = [];
-                        var newids = req.body.flows.map(function(f) {
+                        if (err) console.log(err);
+                        if (!results) results = [];
+                        var newids = req.body.flows.map(function (f) {
                             return f.id;
                         });
 
                         var res = [];
-                        results.forEach(function(f) {
-                            if(newids.indexOf(f.id) < 0) res.push(f.__data);
+                        results.forEach(function (f) {
+                            if (newids.indexOf(f.id) < 0) res.push(f.__data);
                         });
                         req.body.flows.forEach(function (f) {
                             if (!f.callContext) f.callContext = req.callContext;
@@ -98,7 +114,7 @@ module.exports = function startNodeRed(server1, callback) {
                         if (json && json.flows) {
                             rev = json.rev;
                             json.flows.forEach(function (f) {
-                                if (f.callContext.ctx.remoteUser === req.callContext.ctx.remoteUser)
+                                if (f.callContext && f.callContext.ctx && f.callContext.ctx[flowScope] === req.callContext.ctx[flowScope])
                                     result_flows.push(f);
                             });
                         } else {
@@ -114,13 +130,11 @@ module.exports = function startNodeRed(server1, callback) {
                 }
             } else next();
         });
-    }
-    else 
-    {
+    } else {
         app.use(function (req, res, next) {
             if (req.url.startsWith("/red/flows")) {
                 if (req.method === "POST") {
-                    if(req.body && req.body.flows)
+                    if (req.body && req.body.flows)
                         req.body.flows.forEach(function (f) {
                             if (!f.callContext) f.callContext = req.callContext;
                         });
@@ -129,6 +143,7 @@ module.exports = function startNodeRed(server1, callback) {
             } else next();
         });
     }
+
 
     // Create a server
     var server = http.createServer(app);
@@ -169,11 +184,11 @@ function getSettings(server) {
         // Object.keys(fileSettings).forEach(function(k) {
         //     settings[k] = fileSettings[k];
         // });
-    } catch(e) {
+    } catch (e) {
         console.log('server/node-red-settings.js Not Found');
     }
 
-    if(!fileSettings) {
+    if (!fileSettings) {
         var nodeRedUserDir = server.get('nodeRedUserDir');
         if (!nodeRedUserDir) {
             nodeRedUserDir = 'nodered/';
@@ -223,7 +238,7 @@ function getSettings(server) {
     } else {
         console.log("DISABLING oe-node-red-storage as PROJECTS are ENABLED");
     }
-        
+
 
     return settings;
 }
@@ -279,4 +294,23 @@ function logger(msg) {
         default:
             break;
     }
+}
+
+
+function isNodeRedAdmin(req, nodeRedAdminRoles) {
+    if (!nodeRedAdminRoles || !nodeRedAdminRoles.length) {
+        console.warn('nodeRedAdminRoles is invalid. Should be a string array.');
+        return false;
+    }
+    var result = false;
+    if (req.accessToken) {
+        var instance = req.accessToken.__data;
+        if (instance && instance.roles) {
+            for(var i=0; i<nodeRedAdminRoles.length; i++) {
+                result = instance.roles.includes(nodeRedAdminRoles[i]);
+                if (result) break;
+            };
+        }
+    } 
+    return result;
 }
