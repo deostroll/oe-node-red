@@ -145,9 +145,11 @@ ENABLE_NODE_RED_PROJECTS=true   (or 1)
 ```
 
 
-If `projects` are disabled, then Node-RED's storage module is set to the *oe-cloud* specific database 
-storage module (`'../../lib/oe-node-red-storage'`). 
-If `projects` are enabled, then Node-RED uses its default filesystem storage. 
+If `projects` are disabled (default), then Node-RED's storage module is set to the *oe-cloud* specific database 
+storage module (`'../../lib/oe-node-red-storage'`), and flows are saved to the database, with multi-tenancy.
+
+If `projects` are enabled, then Node-RED uses its default filesystem storage. Flows on the filesystem won't 
+be multi-tenant. All flows from the filesystem will be accessible to any user.
 
 
 Finally, if `server/node-red-settings.js` is not present, and you wish to change the defaults on a 
