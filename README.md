@@ -39,6 +39,17 @@ server/app-list.json:
 ]
 </pre>
 
+
+### About the new `projects` feature
+
+`projects` are meant to be enabled in development environment only. In production, you'd typically 
+disable projects. While in `projects` mode (development), flows that are created using the UI are 
+saved locally, in the filesystem, and you have the option of connecting all flows to a single Git 
+repository through the Node-RED UI. Standard Git features such as check in, check out, commit,
+history, etc., are available via the Node-RED UI.
+See here for more info: https://nodered.org/docs/user-guide/projects/
+
+
 ### Configuration
 
 The *oe-node-red* module is configured mainly from two places - 
@@ -59,6 +70,7 @@ by the *oe-node-red* module.
 
 The following are the *oe-node-red* configuration settings possible in the application's `server/config.json` file:
 <pre>
+-------------------------------------------------------------------------------------------------------------------
 setting                  type           default (if not defined)  Description          
 -------------------------------------------------------------------------------------------------------------------
 disableNodered           boolean        false                     Use this to turn off Node-RED (despite having the *oe-node-red* module)
@@ -83,32 +95,66 @@ nodeRedUserScope         boolean        false                     Use this to co
 As mentioned above, this file would contain the same settings as the standalone Node-RED `settings.js` file. 
 Some of the important settings possible in this file is documented here: https://nodered.org/docs/configuration
 
-A sample `setver/node-red-settings.js` file is provided below:
+A sample `server/node-red-settings.js` file is provided below:
 
 ```javascript
 module.exports = {
-  uiPort: process.env.NODE_RED_PORT || 3001,
-  httpRequestTimeout: 120000,
-  editorTheme: {
+  uiPort: process.env.NODE_RED_PORT || 3001,        // default: 3001
+  httpRequestTimeout: 120000,                       // default: not set
+  editorTheme: {       
     projects: {
-      enabled: false
+      enabled: false                                // default: false
     }
   },
-  projectsDir: "D:/NR",
-  httpAdminRoot: '/red',
-  httpNodeRoot: '/redapi',
-  userDir: 'nodered/',
-  nodesDir: '../nodes',
-  flowFile: 'node-red-flows.json',
-  flowFilePretty: true,
-  credentialSecret: "my-random-string",
-  functionGlobalContext: {
-    loopback: require('loopback'),
-    logger: require('oe-logger')('node-red-flow')
-  }
-
+  projectsDir: "D:/NR",                             // default: nodered/projects
+  httpAdminRoot: '/red',                            // default: /red
+  httpNodeRoot: '/redapi',                          // default: /red
+  userDir: 'nodered/',                              // default: nodered/
+  nodesDir: '../nodes',                             // default: ../nodes
+  flowFile: 'node-red-flows.json',                  // default: 'node-red-flows.json'
+  flowFilePretty: true,                             // default: true
+  credentialSecret: "my-random-string",             // default: "my-random-string"
+  functionGlobalContext: {                          // default: {
+    loopback: require('loopback'),                  //            loopback: require('loopback'),
+    logger: require('oe-logger')('node-red-flow')   //            logger: require('oe-logger')('node-red-flow')
+  }                                                //          }
 }
 
 ```
+
+#### Notes
+
+If `server/node-red-settings.js` is not present, the defaults that are provided are as in the comments above.
+
+If `server/node-red-settings.js` is not present, `projects` can be enabled using an environment variable:
+```console
+ENABLE_NODE_RED_PROJECTS=true   (or 1)
+```
+
+
+If `projects` are disabled, then Node-RED's storage module is set to the *oe-cloud* specific database 
+storage module (`'../../lib/oe-node-red-storage'`). 
+If `projects` are enabled, then Node-RED uses its default filesystem storage. 
+
+
+Finally, if `server/node-red-settings.js` is not present, and you wish to change the defaults on a 
+per-parameter basis, then the following `server/config.json` optional parameters are available:
+
+<pre>
+-------------------------------------------------------------------------------------------------------------------
+setting                  type       Description          
+-------------------------------------------------------------------------------------------------------------------
+nodeRedUserDir           string     Same as 'userDir' of node-red-settings.js
+                                    
+
+projectsEnabled          boolean    If set to true, enables projects and disables oe-node-red-storage module
+                                    If set to false, disables projects and enables oe-node-red-storage module
+
+flowProjectsDir          string     Sets the location where Node-RED stores the flow Git projects. Applicable
+                                    when projectsEnabled is set to true.
+
+-------------------------------------------------------------------------------------------------------------------                                                                  
+</pre>
+
 
 
