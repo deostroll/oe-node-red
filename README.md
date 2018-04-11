@@ -111,7 +111,9 @@ Some of the important settings possible in this file is documented here: https:/
 A sample `server/node-red-settings.js` file is provided below:
 
 ```javascript
-module.exports = {
+module.exports = {                                  // All defaults mentioned below are applicable only   
+                                                    // if server/node-red-settings.js is not present
+                                             
   uiPort: process.env.NODE_RED_PORT || 3001,        // default: 3001
   httpRequestTimeout: 120000,                       // default: not set
   editorTheme: {       
