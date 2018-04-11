@@ -47,10 +47,26 @@ The *oe-node-red* module is configured mainly from two places -
 * server/node-red-settings.js
 
 The *oe-node-red* configuration settings are `config.json` is used for high level control, like enabling/disabling Node-RED, 
-enabling and setting up Node-RED-admin roles, etc.,
+enabling and setting up Node-RED-admin roles, etc., All *oe-node-red* configuration parameters in this file are optional. 
 
 The configuration settings possible in `node-red-settings.js` are the same as those that are available to a standalone Node-RED
-instance
+instance through its `settings.js` configuration file. Thus, `server/node-red-settings.js` supports the same parameter settings
+as Node-RED's `settings.js` file. This file (`server/node-red-settings.js`) is optional. In its absence, sane defaults are provided 
+by the *oe-node-red* module. 
+*However, if this file is present, all Node-RED configuration is taken from this file and no defaults will be provided, except for the storage module.*
+
+#### server/config.json settings
+
+The following are the *oe-node-red* configuration settings possible in the application's `server/config.json` file:
+<pre>
+setting                  type           default (if not defined)             
+---------------------------------------------------------------------------------------
+disableNodered           boolean        false
+enableNodeRedAdminRole   boolean        false
+nodeRedAdminRoles        string array   ["NODE_RED_ADMIN"] (applicable only if enableNodeRedAdminRole is true)
+nodeRedUserScope         boolean        false
+</pre>
+
 
 
 
