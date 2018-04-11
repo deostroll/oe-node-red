@@ -78,8 +78,37 @@ nodeRedUserScope         boolean        false                     Use this to co
 </pre>
 
 
+#### server/node-red-settings.js
 
+As mentioned above, this file would contain the same settings as the standalone Node-RED `settings.js` file. 
+Some of the important settings possible in this file is documented here: https://nodered.org/docs/configuration
 
+A sample `setver/node-red-settings.js` file is provided below:
 
+```javascript
+module.exports = {
+  uiPort: process.env.NODE_RED_PORT || 3001,
+  httpRequestTimeout: 120000,
+  editorTheme: {
+    projects: {
+      enabled: false
+    }
+  },
+  projectsDir: "D:/NR",
+  httpAdminRoot: '/red',
+  httpNodeRoot: '/redapi',
+  userDir: 'nodered/',
+  nodesDir: '../nodes',
+  flowFile: 'node-red-flows.json',
+  flowFilePretty: true,
+  credentialSecret: "my-random-string",
+  functionGlobalContext: {
+    loopback: require('loopback'),
+    logger: require('oe-logger')('node-red-flow')
+  }
+
+}
+
+```
 
 
