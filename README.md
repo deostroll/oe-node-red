@@ -59,12 +59,18 @@ by the *oe-node-red* module.
 
 The following are the *oe-node-red* configuration settings possible in the application's `server/config.json` file:
 <pre>
-setting                  type           default (if not defined)             
+setting                  type           default (if not defined)    description          
 ---------------------------------------------------------------------------------------
-disableNodered           boolean        false
-enableNodeRedAdminRole   boolean        false
-nodeRedAdminRoles        string array   ["NODE_RED_ADMIN"] (applicable only if enableNodeRedAdminRole is true)
-nodeRedUserScope         boolean        false
+disableNodered           boolean        false                       Use this to turn off Node-RED (despite having the *oe-node-red* module)
+                                                                    by setting this parameter to true
+enableNodeRedAdminRole   boolean        false                       Use this to allow only users having certain roles to access the Node-RED UI
+                                                                    by setting this parameter to true. Default is to allow all users access.
+nodeRedAdminRoles        string array   ["NODE_RED_ADMIN"]          Use this to setup which roles have access to the Node-RED UI. Applicable 
+                                                                    only if enableNodeRedAdminRole is true
+nodeRedUserScope         boolean        false                       Use this to configure the basis for Node-RED flow isolation (for access).
+                                                                    Setting this to true causes the flows to be isolated based on user. So user A
+                                                                    can see and edit only flows created by him, but cannot access user B's flows.
+                                                                    Setting this to false (the default) causes flows to be isolated based on tenant.
 </pre>
 
 
