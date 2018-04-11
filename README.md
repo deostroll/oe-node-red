@@ -15,6 +15,19 @@ and *Node-RED* itself.
 To get the *Node-RED* feature in the application, the **oe-node-red** node module needs to be added as a *package.json* dependency in the application. 
 Also, the module needs be added to the `server/app-list.json` file in the app. For e.g.,
 
+<pre>
+package.json
+
+...
+...
+...
+    "oe-workflow": "git+http://10.73.97.24/oecloud.io/oe-workflow.git#master",
+    <b>"oe-node-red": "git+http://10.73.97.24/oecloud.io/oe-node-red.git#master",</b>
+    "passport": "0.2.2",
+...
+...
+
+</pre>
 
 <pre>
 server/app-list.json:
@@ -52,7 +65,7 @@ See here for more info: https://nodered.org/docs/user-guide/projects/
 
 ### Configuration
 
-The *oe-node-red* module is configured mainly from two places - 
+The *oe-node-red* module is configured from two files - 
 
 * server/config.json
 * server/node-red-settings.js
