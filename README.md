@@ -39,3 +39,21 @@ server/app-list.json:
 ]
 </pre>
 
+### Configuration
+
+The *oe-node-red* module is configured mainly from two places - 
+
+* server/config.json
+* server/node-red-settings.js
+
+The *oe-node-red* configuration settings are `config.json` is used for high level control, like enabling/disabling Node-RED, 
+enabling and setting up Node-RED-admin roles, etc.,
+
+The configuration settings possible in `node-red-settings.js` are the same as those that are available to a standalone Node-RED
+instance
+
+
+
+
+
+
