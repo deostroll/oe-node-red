@@ -83,16 +83,12 @@ The *oe-node-red* module is configured from two files -
 * server/config.json
 * server/node-red-settings.js
 
-The *oe-node-red* configuration settings are `config.json` is used for high level control, like enabling/disabling Node-RED, 
-enabling and setting up Node-RED-admin roles, etc., All *oe-node-red* configuration parameters in this file are optional. 
-
-The configuration settings possible in `node-red-settings.js` are the same as those that are available to a standalone Node-RED
-instance through its `settings.js` configuration file. Thus, `server/node-red-settings.js` supports the same parameter settings
-as Node-RED's `settings.js` file. This file (`server/node-red-settings.js`) is optional. In its absence, sane defaults are provided 
-by the *oe-node-red* module. 
-*However, if this file is present, all Node-RED configuration is taken from this file and no defaults will be provided, except for the storage module.*
-
 #### server/config.json settings
+
+The *oe-node-red* configuration settings in `config.json` are used for high level control, like enabling/disabling *Node-RED*, 
+enabling and setting up Node-RED-admin roles, etc., 
+
+All *oe-node-red* configuration parameters in this file are optional. 
 
 The following are the *oe-node-red* configuration settings possible in the application's `server/config.json` file:
 <pre>
@@ -100,32 +96,54 @@ The following are the *oe-node-red* configuration settings possible in the appli
 setting                  type           default (if not defined)  Description          
 -------------------------------------------------------------------------------------------------------------------
 disableNodered           boolean        false                     Use this to turn off Node-RED (despite having the *oe-node-red* module)
-                                                                  by setting this parameter to true.
+                                                                  by setting this parameter to true. Default is false, i.e., Node-RED is
+                                                                  enabled by default.
                                                                   
 enableNodeRedAdminRole   boolean        false                     Use this to allow only users having certain roles to access the Node-RED UI
-                                                                  by setting this parameter to true. Default is to allow all users access.
+                                                                  by setting this parameter to true. Default is false, which allows all users
+                                                                  access to Node-RED UI.
                                                                   
-nodeRedAdminRoles        string array   ["NODE_RED_ADMIN"]        Use this to setup which roles have access to the Node-RED UI. Applicable 
-                                                                  only if enableNodeRedAdminRole is true.
+nodeRedAdminRoles        string array   ["NODE_RED_ADMIN"]        Use this to setup the names of the roles which have access to the Node-RED UI. 
+                                                                  This setting is used only if enableNodeRedAdminRole is true.
                                                                   
 nodeRedUserScope         boolean        false                     Use this to configure the basis for Node-RED flow isolation (for access).
                                                                   Setting this to true causes the flows to be isolated based on user. So user A
                                                                   can see and edit only flows created by him, but cannot access user B's flows.
                                                                   Setting this to false (the default) causes flows to be isolated based on tenant.
+//
+// The following are used to override the corresponding defaults provided by the oe-node-red module, 
+// when server/node-red-settings.js is absent. These will be ignored if server/node-red-settings.js is present.
+//
+
+nodeRedUserDir           string         nodered/                  Same as 'userDir' of node-red-settings.js
+                                    
+
+projectsEnabled          boolean        false                     If set to true, enables projects and disables oe-node-red-storage module
+                                                                  If set to false, disables projects and enables oe-node-red-storage module
+
+flowProjectsDir          string         nodered/projects          Sets the location where Node-RED stores the flow Git projects. Applicable
+                                                                  when projectsEnabled is set to true.                                                                  
+                                                                  
 -------------------------------------------------------------------------------------------------------------------                                                                  
 </pre>
 
 
 #### server/node-red-settings.js
 
-As mentioned above, this file would contain the same settings as the standalone Node-RED `settings.js` file. 
-Some of the important settings possible in this file is documented here: https://nodered.org/docs/configuration
+`server/node-red-settings.js` supports the same parameter settings as Node-RED's `settings.js` file. 
+
+This file (`server/node-red-settings.js`) is optional. In its absence, sane defaults are provided 
+by the *oe-node-red* module. 
+
+*If this file is present, all Node-RED configuration is taken from this file and no defaults will be provided, except for the storage module.*
+
+Some of the important settings possible in this file are documented here: https://nodered.org/docs/configuration
 
 A sample `server/node-red-settings.js` file is provided below:
 
 ```javascript
 module.exports = {                                  // All defaults mentioned below are applicable only   
-                                                    // if server/node-red-settings.js is not present
+                                                    // if server/node-red-settings.js is **not present**
                                              
   uiPort: process.env.NODE_RED_PORT || 3001,        // default: 3001
   httpRequestTimeout: 120000,                       // default: not set
@@ -153,38 +171,19 @@ module.exports = {                                  // All defaults mentioned be
 #### Notes
 
 If `server/node-red-settings.js` is not present, the defaults that are provided are as in the comments above.
+In this case, you can set `nodeRedUserDir`, `projectsEnabled`, and `flowProjectsDir` in `server/config.json`
+to override the corresponding defaults, as shown in the `server/config.json settings` section above. 
 
-If `server/node-red-settings.js` is not present, `projects` can be enabled using an environment variable:
+If `server/node-red-settings.js` is not present, `projects` can be enabled/disabled from `server/config.json settings`
+as mentioned above. This `project` setting can further be overridden using an environment variable:
 ```console
 ENABLE_NODE_RED_PROJECTS=true   (or 1)
 ```
 
+If `projects` are disabled (default), then *Node-RED*'s storage module is set to the *oe-cloud* specific database 
+storage module (`'../../lib/oe-node-red-storage'`), and *Node-RED flows* are saved to the database, with multi-tenancy.
 
-If `projects` are disabled (default), then Node-RED's storage module is set to the *oe-cloud* specific database 
-storage module (`'../../lib/oe-node-red-storage'`), and flows are saved to the database, with multi-tenancy.
-
-If `projects` are enabled, then Node-RED uses its default filesystem storage. Flows on the filesystem won't 
-be multi-tenant. All flows from the filesystem will be accessible to any user.
-
-
-Finally, if `server/node-red-settings.js` is not present, and you wish to change the defaults on a 
-per-parameter basis, then the following `server/config.json` optional parameters are available:
-
-<pre>
--------------------------------------------------------------------------------------------------------------------
-setting                  type       Description          
--------------------------------------------------------------------------------------------------------------------
-nodeRedUserDir           string     Same as 'userDir' of node-red-settings.js
-                                    
-
-projectsEnabled          boolean    If set to true, enables projects and disables oe-node-red-storage module
-                                    If set to false, disables projects and enables oe-node-red-storage module
-
-flowProjectsDir          string     Sets the location where Node-RED stores the flow Git projects. Applicable
-                                    when projectsEnabled is set to true.
-
--------------------------------------------------------------------------------------------------------------------                                                                  
-</pre>
-
+If `projects` are enabled, then *Node-RED* uses its default filesystem storage. *Flows* on the filesystem won't 
+be multi-tenant. All *flows* from the filesystem will be accessible to any user.
 
 
