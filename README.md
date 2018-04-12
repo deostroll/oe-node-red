@@ -5,7 +5,7 @@
 In order to take advantage of new features introduced in newer versions of Node-RED, like PROJECTS (linking Node-RED flows with Git), 
 we need to be able to upgrade Node-RED easily and seamlessly.
 To this end, Node-RED has been separated from the core *oe-cloud* and the Node-RED integration with *oe-cloud* is now implemented as an 
-optional "app-list" module for the *oe-cloud*-based app.
+optional "app-list" module for the *oe-cloud*-based app. This new module is called **oe-node-red**.
 
 ## About the module
 **oe-node-red** is a meta-package for Node-RED integration with *oe-cloud*, which means that this module is the only dependency required by an
