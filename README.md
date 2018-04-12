@@ -2,36 +2,58 @@
 
 ## Introduction
 **Node-RED** has been a feature of *oe-cloud* framework for some time now, and it has been widely adopted for its extreme ease of use. 
-In order to take advantage of new features introduced in newer versions of Node-RED, like PROJECTS (linking Node-RED flows with Git), 
-we need to be able to upgrade Node-RED easily and seamlessly.
-To this end, Node-RED has been separated from the core *oe-cloud* and the Node-RED integration with *oe-cloud* is now implemented as an 
+In order to take advantage of new features introduced in newer versions of *Node-RED*, like *projects* (linking *Node-RED* flows with *Git*), 
+we need to be able to upgrade *Node-RED* easily and seamlessly.
+To this end, *Node-RED* has been separated from the core *oe-cloud* framework and the *Node-RED* integration is now implemented as an 
 optional "app-list" module for the *oe-cloud*-based app. This new module is called **oe-node-red**.
 
 ## About the module
-**oe-node-red** is a meta-package for Node-RED integration with *oe-cloud*, which means that this module is the only dependency required by an
-*oe-cloud* based application to get the Node-RED integration feature. *oe-node-red* module manages other dependencies like *loopback-connector-for-Node-RED*,
-and *Node-RED* itself.
+**oe-node-red** is a meta-package for *Node-RED* integration with *oe-cloud*, which means that this module is the only dependency required by an
+*oe-cloud* based application to get the *Node-RED* feature. 
 
-### Usage
-To get the *Node-RED* feature in the application, the **oe-node-red** node module needs to be added as a *package.json* dependency in the application. 
-Also, the module needs be added to the `server/app-list.json` file in the app. For e.g.,
+The *oe-node-red* module manages other dependencies like *loopback-connector-for-Node-RED*, and *Node-RED* itself. As of now, the *Node-RED* 
+dependency version is changed from 16.x to 18.x, which has various improvements including `projects`.
+
+
+### About the new `projects` feature
+
+`projects` are meant to be enabled in development environment only. In production, you'd typically 
+disable projects. While in `projects` mode (development), flows that are created using the UI are 
+saved locally, in the filesystem, and you have the option of connecting all flows to a single Git 
+repository through the Node-RED UI. Standard Git features such as check in, check out, commit,
+history, etc., are available via the Node-RED UI.
+See here for more info: https://nodered.org/docs/user-guide/projects/
+
+
+## How to add Node-RED feature in oe-cloud -based app?
+
+To get the *Node-RED* feature in the application, the **oe-node-red** node module needs to be added 
+as a *package.json* dependency in the application. 
+
+Also, the module needs be added to the `server/app-list.json` file in the app. 
+
+For e.g.,
 
 <pre>
-package.json
+package.json  (only part of the file is shown here, with relevant section in bold):
 
-...
-...
-...
-    "oe-workflow": "git+http://10.73.97.24/oecloud.io/oe-workflow.git#master",
-    <b>"oe-node-red": "git+http://10.73.97.24/oecloud.io/oe-node-red.git#master",</b>
-    "passport": "0.2.2",
-...
-...
+
+   ...
+   ...
+   "dependencies": {
+       ...
+       ...
+       ...
+       "oe-workflow": "git+http://10.73.97.24/oecloud.io/oe-workflow.git#master",
+       <b>"oe-node-red": "git+http://10.73.97.24/oecloud.io/oe-node-red.git#master",</b>
+       "passport": "0.2.2",
+       ...
+       ...
 
 </pre>
 
 <pre>
-server/app-list.json:
+server/app-list.json   (Relevant section in bold):
 
 [
     {
@@ -52,16 +74,6 @@ server/app-list.json:
     }
 ]
 </pre>
-
-
-### About the new `projects` feature
-
-`projects` are meant to be enabled in development environment only. In production, you'd typically 
-disable projects. While in `projects` mode (development), flows that are created using the UI are 
-saved locally, in the filesystem, and you have the option of connecting all flows to a single Git 
-repository through the Node-RED UI. Standard Git features such as check in, check out, commit,
-history, etc., are available via the Node-RED UI.
-See here for more info: https://nodered.org/docs/user-guide/projects/
 
 
 ### Configuration
