@@ -52,7 +52,7 @@ module.exports = function startNodeRed(server, callback) {
     // Initialise the runtime with a server and settings
     RED.init(server1, settings);
 
-    // Serve the editor UI from /red
+    // Serve the editor UI on httpAdminRoot path
     app.use(settings.httpAdminRoot, RED.httpAdmin);
 
     // Serve the http nodes UI from /api
@@ -64,8 +64,6 @@ module.exports = function startNodeRed(server, callback) {
 
     // Start the runtime
     RED.start();
-    console.log("Node-RED Starting on port " + port)
-
 }
 
 // initializes app with oe-cloud specific handlers
@@ -149,8 +147,8 @@ function initApp(app, server) {
         // Get nodeRedAdminRoles from settings, defaulting to NODE_RED_ADMIN
         var nodeRedAdminRoles = server.get('nodeRedAdminRoles') ? server.get('nodeRedAdminRoles') : ["NODE_RED_ADMIN"];
         app.use(function (req, res, next) {
-            // Apply admin check only for URLs beginning with "/red"
-            if (req.url.startsWith("/red") &&  !isNodeRedAdmin(req, nodeRedAdminRoles)) {
+            // Apply admin check only for URLs beginning with httpAdminRoot(default: /red)
+            if (req.url.startsWith(settings.httpAdminRoot) &&  !isNodeRedAdmin(req, nodeRedAdminRoles)) {
                 return res.status(401).json({
                     error: 'unauthorized'
                 });
@@ -179,7 +177,7 @@ function initApp(app, server) {
 
         app.use(function (req, res, next) {
             // Intercept '/red/flows' URL, used to save and get flows from the NR UI
-            if (req.url.startsWith("/red/flows")) {
+            if (req.url.startsWith(settings.httpAdminRoot + "/flows")) {
                 // If NR is saving flows (which is usually a sub-set of all flows in DB),
                 // fetch all flows from DB, merge DB results with current flows and set into req
                 // for all downstream (NR) use
@@ -262,7 +260,7 @@ function initApp(app, server) {
         // while saving flows
     } else {
         app.use(function (req, res, next) {
-            if (req.url.startsWith("/red/flows")) {
+            if (req.url.startsWith(settings.httpAdminRoot + "/flows")) {
                 if (req.method === "POST") {
                     if (req.body && req.body.flows)
                         req.body.flows.forEach(function (f) {
@@ -282,20 +280,25 @@ function initApp(app, server) {
 // In the sane default, PROJECTS are disabled, by default. It can be enabled by setting 
 // ENABLE_NODE_RED_PROJECTS to true or 1
 function getSettings(server) {
-
+    console.log('\n===================================================================\n');
     if (server.get('disableNodered') === true) {
-        console.log('\n===================================================================\n');
-        console.log('INFO: Node-Red is disabled via config.json: (disableNodered: true)');
+        console.log('Node-Red is disabled via config.json: (disableNodered: true)');
         console.log('\n===================================================================\n');
 
         return false;
     }
+    console.log('Node-Red is ENABLED');
     var settings;
     var fileSettings;
+    var projectsEnabled;
     try {
         var fileSettings = require('../../../../server/node-red-settings.js');
+        // Flag to indicate whether PROJECTS are enabled of not
+        projectsEnabled = fileSettings.editorTheme && fileSettings.editorTheme.projects && fileSettings.editorTheme.projects.enabled === true;
+
     } catch (e) {
         console.log('server/node-red-settings.js Not Found');
+        console.log("Default Node-RED settings will be provided from code/environment variables.");
     }
 
     // If server/node-red-settings.js is not found, setup some sane defaults
@@ -307,7 +310,7 @@ function getSettings(server) {
         }
         var nodeRedMetrics = server.get('nodeRedMetrics') || false;
         var nodeRedAudit = server.get('nodeRedAudit') || false;
-        var projectsEnabled = (process.env["ENABLE_NODE_RED_PROJECTS"] === "true" ||
+        projectsEnabled = (process.env["ENABLE_NODE_RED_PROJECTS"] === "true" ||
             process.env["ENABLE_NODE_RED_PROJECTS"] === "1") ? true : false;
         console.log("Node-RED flow Projects are ", projectsEnabled ? "ENABLED" : "DISABLED", "( env variable ENABLE_NODE_RED_PROJECTS =", process.env["ENABLE_NODE_RED_PROJECTS"], projectsEnabled ? "" : " Set this to 'true' or '1' to enable NR Projects", " )");
 
@@ -321,8 +324,8 @@ function getSettings(server) {
             projectsDir: server.get('flowProjectsDir') ? server.get('flowProjectsDir') : path.join(server.get('nodeRedUserDir'), "projects"),
             httpAdminRoot: '/red',
             httpNodeRoot: '/redapi',
-            userDir: nodeRedUserDir,
-            nodesDir: '../nodes',
+            userDir: projectsEnabled? projectsDir : nodeRedUserDir,   // Setting userDir to projectsDir if Projects are enabled, as this is where NR 
+            nodesDir: '../nodes',                                     // stores Projects, and there is no setting provided by NR specifically for projectsDir
             flowFile: 'node-red-flows.json',
             logging: {
                 'oe-logger': {
@@ -341,8 +344,13 @@ function getSettings(server) {
             }
         };
     } else {
+        console.log("Using Node-RED settings from settings file: server/node-red-settings.js");
+        console.log("No NR settings are provided in code, except the storage module.");
         settings = fileSettings;
+        if(projectsEnabled && settings.projectsDir) 
+            settings.userDir = settings.projectsDir;  // See comments on projectsDir/userDir above
     }
+    console.log("See documentation at http://evgit/oecloud.io/oe-node-red/ for details on oe-node-red settings");
 
     // Flag to indicate whether PROJECTS are enabled of not
     var projectsEnabled = settings.editorTheme && settings.editorTheme.projects && settings.editorTheme.projects.enabled === true;
@@ -350,11 +358,17 @@ function getSettings(server) {
     // If PROJECTS are not enabled, Setup oe-cloud specific storage module as storage module  
     if (!projectsEnabled) {
         settings.storageModule = require("../../lib/oe-node-red-storage");
-        console.log("Enabling oe-node-red-storage as PROJECTS are DISABLED");
+        console.log("Node-Red is in PRODUCTION Mode:");
+        console.log("    - Node-RED Flow PROJECTS are DISABLED");
+        console.log("    - 'oe-node-red-storage' (DB storage for NR Flows) is ENABLED");
     } else {
-        console.log("DISABLING oe-node-red-storage as PROJECTS are ENABLED");
+        console.log("Node-Red is in DEVELOPMENT Mode:");
+        console.log("    - Node-RED Flow PROJECTS are ENABLED");
+        console.log("    - 'oe-node-red-storage' (DB storage for NR Flows) is DISABLED");
     }
+    console.log("Node-RED Starting at http://<this_host>:" + settings.uiPort + settings.httpAdminRoot);
 
+    console.log('\n===================================================================\n');
 
     return settings;
 }
