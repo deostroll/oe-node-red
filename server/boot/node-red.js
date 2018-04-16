@@ -144,6 +144,7 @@ function initApp(app, server) {
 
     // Add a check for node-red-admin role only if 'enableNodeRedAdminRole' is true
     if (server.get('enableNodeRedAdminRole') === true) {
+        console.log("Node-RED Admin Role is ENABLED. Only users with nodeRedAdminRoles (see server/config.json) can use Node-RED");
         // Get nodeRedAdminRoles from settings, defaulting to NODE_RED_ADMIN
         var nodeRedAdminRoles = server.get('nodeRedAdminRoles') ? server.get('nodeRedAdminRoles') : ["NODE_RED_ADMIN"];
         app.use(function (req, res, next) {
@@ -155,6 +156,8 @@ function initApp(app, server) {
             }
             next();
         });
+    } else {
+        console.log("Node-RED Admin Role is DISABLED (default). Any logged-in user can use Node-RED");
     }
 
     // Add the hook for publishing 'reloadNodeRedFlows' event message 
