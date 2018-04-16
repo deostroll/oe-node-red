@@ -26,7 +26,7 @@ var uuidv4 = require('uuid/v4');
 var NodeRedFlows = loopback.getModelByType('NodeRedFlow');
 var options = { ignoreAutoScope: true, fetchAllScopes: true };
 var settings;
-
+var TAG = "    * ";
 // The boot function
 module.exports = function startNodeRed(server, callback) {
 
@@ -241,7 +241,7 @@ function initApp(app, server) {
                                     result_flows.push(f);
                             });
                         } else {
-                            console.log("No flows in response, json=", json);
+                            console.log(TAG + "No flows in response, json=", json);
                         }
 
                         // Setting the results back into the body of the response and sending to client
@@ -282,12 +282,12 @@ function initApp(app, server) {
 function getSettings(server) {
     console.log('\n===================================================================\n');
     if (server.get('disableNodered') === true) {
-        console.log('Node-Red is disabled via config.json: (disableNodered: true)');
+        console.log(TAG + 'oe-node-red (Node-RED integration) is disabled via config.json: (disableNodered: true)');
         console.log('\n===================================================================\n');
 
         return false;
     }
-    console.log('Node-Red is ENABLED');
+    console.log(TAG + 'oe-node-red (Node-RED integration) is ENABLED');
     var settings;
     var fileSettings;
     var projectsEnabled;
@@ -297,8 +297,8 @@ function getSettings(server) {
         projectsEnabled = fileSettings.editorTheme && fileSettings.editorTheme.projects && fileSettings.editorTheme.projects.enabled === true;
 
     } catch (e) {
-        console.log('server/node-red-settings.js Not Found');
-        console.log("Default Node-RED settings will be provided from code/environment variables.");
+        console.log(TAG + 'server/node-red-settings.js Not Found');
+        console.log(TAG + "Default Node-RED settings will be provided from code/environment variables.");
     }
 
     // If server/node-red-settings.js is not found, setup some sane defaults
@@ -312,7 +312,7 @@ function getSettings(server) {
         var nodeRedAudit = server.get('nodeRedAudit') || false;
         projectsEnabled = (process.env["ENABLE_NODE_RED_PROJECTS"] === "true" ||
             process.env["ENABLE_NODE_RED_PROJECTS"] === "1") ? true : false;
-        console.log("Node-RED flow Projects are ", projectsEnabled ? "ENABLED" : "DISABLED", "( env variable ENABLE_NODE_RED_PROJECTS =", process.env["ENABLE_NODE_RED_PROJECTS"], projectsEnabled ? "" : " Set this to 'true' or '1' to enable NR Projects", " )");
+        console.log(TAG + "Node-RED flow Projects are ", projectsEnabled ? "ENABLED" : "DISABLED", "( env variable ENABLE_NODE_RED_PROJECTS =", process.env["ENABLE_NODE_RED_PROJECTS"], projectsEnabled ? "" : " Set this to 'true' or '1' to enable NR Projects", " )");
 
         // create the default settings object
         settings = {
@@ -344,13 +344,13 @@ function getSettings(server) {
             }
         };
     } else {
-        console.log("Using Node-RED settings from settings file: server/node-red-settings.js");
-        console.log("No NR settings are provided in code, except the storage module.");
+        console.log(TAG + "Using Node-RED settings from settings file: server/node-red-settings.js");
+        console.log(TAG + "No NR settings are provided in code, except the storage module.");
         settings = fileSettings;
         if(projectsEnabled && settings.projectsDir) 
             settings.userDir = settings.projectsDir;  // See comments on projectsDir/userDir above
     }
-    console.log("See documentation at http://evgit/oecloud.io/oe-node-red/ for details on oe-node-red settings");
+    console.log(TAG + "See documentation at http://evgit/oecloud.io/oe-node-red/ for details on oe-node-red settings");
 
     // Flag to indicate whether PROJECTS are enabled of not
     var projectsEnabled = settings.editorTheme && settings.editorTheme.projects && settings.editorTheme.projects.enabled === true;
@@ -358,17 +358,17 @@ function getSettings(server) {
     // If PROJECTS are not enabled, Setup oe-cloud specific storage module as storage module  
     if (!projectsEnabled) {
         settings.storageModule = require("../../lib/oe-node-red-storage");
-        console.log("Node-Red is in PRODUCTION Mode:");
-        console.log("    - Node-RED Flow PROJECTS are DISABLED");
-        console.log("    - 'oe-node-red-storage' (DB storage for NR Flows) is ENABLED");
+        console.log(TAG + "Node-Red is in PRODUCTION Mode:");
+        console.log(TAG + "    - Node-RED Flow PROJECTS are DISABLED");
+        console.log(TAG + "    - 'oe-node-red-storage' (DB storage for NR Flows) is ENABLED");
     } else {
-        console.log("Node-Red is in DEVELOPMENT Mode:");
-        console.log("    - Node-RED Flow PROJECTS are ENABLED");
-        console.log("    - 'oe-node-red-storage' (DB storage for NR Flows) is DISABLED");
+        console.log(TAG + "Node-Red is in DEVELOPMENT Mode:");
+        console.log(TAG + "    - Node-RED Flow PROJECTS are ENABLED");
+        console.log(TAG + "    - 'oe-node-red-storage' (DB storage for NR Flows) is DISABLED");
     }
-    if (server.get('enableNodeRedAdminRole') === true) console.log("Node-RED Admin Role is ENABLED. Only users with nodeRedAdminRoles (see server/config.json) can use Node-RED");
-    else console.log("Node-RED Admin Role is DISABLED (default). Any logged-in user can use Node-RED");
-    console.log("Node-RED Starting at http://<this_host>:" + settings.uiPort + settings.httpAdminRoot);
+    if (server.get('enableNodeRedAdminRole') === true) console.log(TAG + "Node-RED Admin Role is ENABLED. Only users with nodeRedAdminRoles (see server/config.json) can use Node-RED");
+    else console.log(TAG + "Node-RED Admin Role is DISABLED (default). Any logged-in user can use Node-RED");
+    console.log(TAG + "Node-RED Starting at http://<this_host>:" + settings.uiPort + settings.httpAdminRoot);
     console.log('\n===================================================================\n');
 
     return settings;
@@ -382,7 +382,7 @@ function getSettings(server) {
 // then a default role called NODE_RED_ADMIN is used.
 function isNodeRedAdmin(req, nodeRedAdminRoles) {
     if (!nodeRedAdminRoles || !nodeRedAdminRoles.length) {
-        console.warn('nodeRedAdminRoles is invalid. Should be a string array.');
+        console.warn(TAG + 'nodeRedAdminRoles is invalid. Should be a string array.');
         return false;
     }
     var result = false;
