@@ -288,7 +288,7 @@ function initApp(app, server) {
 // In the sane default, PROJECTS are disabled, by default. It can be enabled by setting 
 // ENABLE_NODE_RED_PROJECTS to true or 1
 function getSettings(server) {
-    console.log('\n===================================================================\n');
+    console.log('\n========================Node-RED Details===========================\n');
     if (server.get('disableNodered') === true) {
         console.log(TAG + 'oe-node-red (Node-RED integration) is disabled via config.json: (disableNodered: true)');
         console.log('\n===================================================================\n');
