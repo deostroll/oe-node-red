@@ -194,10 +194,10 @@ function initApp(app, server) {
                         // initialize empty result array
                         var res = [];
 
-                        // Get all flows in DB other than the ones in the current flow list from req,
+                        // Get all flows in DB other than the current user/tenant's flows
                         // into the res array
                         results.forEach(function (f) {
-                            if (newids.indexOf(f.id) < 0) res.push(f.__data);
+                            if (f.callContext.ctx[flowScope] !== req.callContext.ctx[flowScope]) res.push(f.__data);
                         });
 
                         // Append the flows from current req into res, after adding callContext
