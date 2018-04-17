@@ -1,6 +1,6 @@
 {
   "name": "oe-node-red",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A meta package to integrate Node-RED with oe-Cloud",
   "main": "index.js",
   "directories": {
