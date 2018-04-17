@@ -193,11 +193,12 @@ function initApp(app, server) {
 
                         // initialize empty result array
                         var res = [];
-
+                        var idsToDelete = [];
                         // Get all flows in DB other than the current user/tenant's flows
-                        // into the res array
+                        // into the res array, and the current user/tenant's flow ids into idsToDelete array
                         results.forEach(function (f) {
                             if (f.callContext.ctx[flowScope] !== req.callContext.ctx[flowScope]) res.push(f.__data);
+                            else idsToDelete.push(f.__data.id);
                         });
 
                         // Append the flows from current req into res, after adding callContext
@@ -210,7 +211,14 @@ function initApp(app, server) {
                         // into the request so that NR gets the complete flow list for 
                         // execution and saving
                         req.body.flows = res;
-                        next();
+
+                        // Deleting all nodes that belong to the current user from database
+                        // as fresh (possibly updated) nodes will be saved from the current request
+                        // via the storage module's saveNodes() function 
+                        NodeRedFlows.deleteAll({id: {inq: idsToDelete}}, options, function deleteCb(err, results) {
+                            if(err) console.log(err);
+                            next();
+                        });
                     });
 
                     // If NR is fetching flows, the request triggers NR to call getFlows()
@@ -371,7 +379,8 @@ function getSettings(server) {
     console.log(TAG + "Node-RED Starting at http://<this_host>:" + settings.uiPort + settings.httpAdminRoot);
     console.log('\n===================================================================\n');
 
-    return settings;
+    settings.editorTheme.projects.appPort = server.get('port'); // application Port is required in Node-RED UI, so adding to settings.
+    return settings;                                            // Only Projects settings seem to be passed to UI, so...
 }
 
 
