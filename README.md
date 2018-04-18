@@ -187,21 +187,22 @@ If `projects` are enabled, then *Node-RED* uses its default filesystem storage. 
 be multi-tenant. All *flows* from the filesystem will be accessible to any user.
 
 ## Migration from oe-cloud v 1.2.0/1.3.0
-In this new implementation of Node-RED integration, flow-nodes are now stored as separate records, one record per node.
+In this new implementation of *Node-RED* integration, flow-nodes are now stored as separate records, one record per node.
 So, a flow that contains 10 nodes would be stored as 10 records plus an extra node of type "flow", making a total of 11 records
-in the database (NodeRedFlow table). This is in contrast to the earlier (oe-cloud v 1.2.0/1.3.0) implementation
-where all flows (and their nodes) are stored as a single record in the database.
+in the database (*NodeRedFlow* table). This is in contrast to the earlier (*oe-cloud v 1.2.0/1.3.0*) implementation
+where all flows (and their nodes) are stored as a single record in the database. The old storage format will not work with
+the new *Node-RED* integration implementation.
 
 To address this, the following migration strategy can be adopted:
 
-1. Before upgrading to the new oe-cloud that includes the new Node-RED implementation, Login to your application and open the Node-RED UI.
-2. Export your Node-RED flows to the clipboard using the ``Menu --> Export --> Clipboard`` option.
+1. Before upgrading to the new *oe-cloud* that includes the new *Node-RED* integration implementation, Login to your application and open the *Node-RED* UI.
+2. Export your *Node-RED* flows to the clipboard using the ``Menu --> Export --> Clipboard`` option.
 3. Save the contents of the clipboard to a local file, with filename same as the tab name.
-4. Repeat steps 2 and 3 for all tabs in your Node-RED interface, at the end of which you should have as many local files as there are tabs in your Node-RED UI.
-5. Delete all your Node-RED flow-data from the database (NodeRedFlow table) by deleting all your flows (from all tabs) using your Node-RED UI.
-6. Upgrade to the latest version of oe-cloud which includes the new implementation of Node-RED integration.
-7. Login to your application and open the new Node-RED UI
-8. Import the flows from each of the files created in step 3 back into Node-RED, naming the tabs the same as the filename.
+4. Repeat steps 2 and 3 for all tabs in your *Node-RED* interface, at the end of which you should have as many local files as there are tabs in your *Node-RED* UI.
+5. Delete all your *Node-RED* flow-data from the database (*NodeRedFlow* table) by deleting all your flows (from all tabs) using your *Node-RED* UI.
+6. Upgrade to the latest version of oe-cloud which includes the new implementation of *Node-RED* integration.
+7. Login to your application and open the new *Node-RED* UI
+8. Import the flows from each of the files created in step 3 back into *Node-RED*, naming the tabs the same as the filename.
 9. Run a sanity test on your flows.
 
 
