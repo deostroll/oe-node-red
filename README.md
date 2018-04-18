@@ -202,7 +202,7 @@ To address this, the following migration strategy can be adopted:
 5. Delete all your *Node-RED* flow-data from the database (*NodeRedFlow* table) by deleting all your flows (from all tabs) using your *Node-RED* UI.
 6. Upgrade to the latest version of oe-cloud which includes the new implementation of *Node-RED* integration.
 7. Login to your application and open the new *Node-RED* UI
-8. Import the flows from each of the files created in step 3 back into *Node-RED*, naming the tabs the same as the filename.
+8. Import the flows from each of the files created in step 3 back into *Node-RED*, naming the tabs the same as the filename, using the ``Menu --> Import --> Clipboard`` option
 9. Run a sanity test on your flows.
 
 
