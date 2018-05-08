@@ -288,7 +288,7 @@ function initApp(app, server) {
 // In the sane default, PROJECTS are disabled, by default. It can be enabled by setting 
 // ENABLE_NODE_RED_PROJECTS to true or 1
 function getSettings(server) {
-    console.log('\n========================Node-RED Details===========================\n');
+    console.log('\n===================================================================\n');
     if (server.get('disableNodered') === true) {
         console.log(TAG + 'oe-node-red (Node-RED integration) is disabled via config.json: (disableNodered: true)');
         console.log('\n===================================================================\n');
@@ -298,7 +298,7 @@ function getSettings(server) {
     console.log(TAG + 'oe-node-red (Node-RED integration) is ENABLED');
     var settings;
     var fileSettings;
-    var projectsEnabled;
+    var projectsEnabled = true;
     try {
         var fileSettings = require('../../../../server/node-red-settings.js');
         // Flag to indicate whether PROJECTS are enabled of not
@@ -318,10 +318,10 @@ function getSettings(server) {
         }
         var nodeRedMetrics = server.get('nodeRedMetrics') || false;
         var nodeRedAudit = server.get('nodeRedAudit') || false;
-        projectsEnabled = (process.env["ENABLE_NODE_RED_PROJECTS"] === "true" ||
-            process.env["ENABLE_NODE_RED_PROJECTS"] === "1") ? true : false;
-        console.log(TAG + "Node-RED flow Projects are ", projectsEnabled ? "ENABLED" : "DISABLED", "( env variable ENABLE_NODE_RED_PROJECTS =", process.env["ENABLE_NODE_RED_PROJECTS"], projectsEnabled ? "" : " Set this to 'true' or '1' to enable NR Projects", " )");
-
+        projectsEnabled = (process.env["DISABLE_NODE_RED_PROJECTS"] === "true" ||
+            process.env["DISABLE_NODE_RED_PROJECTS"] === "1") ? false : true;
+        if(process.env["DISABLE_NODE_RED_PROJECTS"]) console.log(TAG + "Node-RED flow Projects are ", projectsEnabled ? "ENABLED" : "DISABLED", "( env variable DISABLE_NODE_RED_PROJECTS =", process.env["DISABLE_NODE_RED_PROJECTS"], projectsEnabled ? "" : " Set this to 'true' or '1' to disable NR Projects", " )");
+        else console.log(TAG + "Node-RED flow Projects are ", projectsEnabled ? "ENABLED" : "DISABLED", "( default, when no node-red-settings.js file is present )", " Set env variable DISABLE_NODE_RED_PROJECTS to 'true' or '1' to disable NR Projects");
         // create the default settings object
         settings = {
             editorTheme: {
@@ -361,7 +361,7 @@ function getSettings(server) {
     console.log(TAG + "See documentation at http://evgit/oecloud.io/oe-node-red/ for details on oe-node-red settings");
 
     // Flag to indicate whether PROJECTS are enabled of not
-    var projectsEnabled = settings.editorTheme && settings.editorTheme.projects && settings.editorTheme.projects.enabled === true;
+//    var projectsEnabled = settings.editorTheme && settings.editorTheme.projects && settings.editorTheme.projects.enabled === true;
     
     // If PROJECTS are not enabled, Setup oe-cloud specific storage module as storage module  
     if (!projectsEnabled) {
