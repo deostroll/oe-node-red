@@ -100,7 +100,7 @@ setting                  type           default (if not defined)  Description
 -------------------------------------------------------------------------------------------------------------------
 disableNodered           boolean        false                     Use this to turn off Node-RED (despite having the *oe-node-red* module)
                                                                   by setting this parameter to true. Default is false, i.e., Node-RED is
-                                                                  enabled by default.
+                                                                  enabled by default. See notes below for corresponding environment variable.
                                                                   
 enableNodeRedAdminRole   boolean        false                     Use this to allow only users having certain roles to access the Node-RED UI
                                                                   by setting this parameter to true. Default is false, which allows all users
@@ -121,8 +121,8 @@ nodeRedUserScope         boolean        false                     Use this to co
 nodeRedUserDir           string         nodered/                  Same as 'userDir' of node-red-settings.js
                                     
 
-disableNodeRedProjects   boolean        false                     If set to true, disables Node-RED projects 
-                                                                  If set to anything else, enables Node-RED projects
+disableNodeRedProjects   boolean        false                     If set to true, disables Node-RED projects. If set to anything else, enables 
+                                                                  Node-RED projects. See notes below for corresponding environment variable.
 
 flowProjectsDir          string         nodered/                  Sets the location where Node-RED stores the flow Git projects. 
                                                                   Applicable when Node-RED projects are enabled.                                                                  
@@ -172,6 +172,12 @@ module.exports = {                                  // All defaults mentioned be
 ```
 
 #### Notes
+
+As mentioned above, Node-RED integration can be disabled from the server/config.json. It can also be disabled by 
+setting the environment variable:
+```console
+DISABLE_NODE_RED=true   (or 1)
+```
 
 If `server/node-red-settings.js` is not present, the defaults that are provided are as in the comments above.
 In this case, you can set `nodeRedUserDir`, `disableNodeRedProjects`, and `flowProjectsDir` in `server/config.json`
