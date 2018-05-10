@@ -293,11 +293,15 @@ function getSettings(server) {
     if(PRODUCTION_MODE) log.info(TAG + "We are in PRODUCTION MODE ( env variable NODE_ENV = "+ process.env["NODE_ENV"] +" )");
     else log.info(TAG + "We are in DEVELOPMENT MODE");
     if (server.get('disableNodered') === true) {
-        log.info(TAG + 'oe-node-red (Node-RED integration) is disabled via config.json: (disableNodered: true)');
+        log.info(TAG + 'oe-node-red (Node-RED integration) is DISABLED via config.json: (disableNodered: true)');
         log.info('===================================================================\n');
-
         return false;
     }
+    if (process.env["DISABLE_NODE_RED"] === "true" || process.env["DISABLE_NODE_RED"] === "1") {
+        log.info(TAG + 'oe-node-red (Node-RED integration) is DISABLED via environment variable: (DISABLE_NODE_RED = ' + process.env["DISABLE_NODE_RED"]);
+        log.info('===================================================================\n');
+        return false;
+    }    
     log.info(TAG + 'oe-node-red (Node-RED integration) is ENABLED by default. (To disable, set disableNodered: true in server/config.json)');
     var settings;
     var fileSettings;
@@ -313,31 +317,27 @@ function getSettings(server) {
         log.info(TAG + "No NR settings are provided in code, except the storage module.");
         // Flag to indicate whether PROJECTS are enabled of not
         projectsEnabled = fileSettings.editorTheme && fileSettings.editorTheme.projects && fileSettings.editorTheme.projects.enabled === true;
-        if(projectsEnabled) {
-            if(PRODUCTION_MODE) {
+        if(PRODUCTION_MODE) {
+            if(projectsEnabled) {
                 log.warn(TAG + "WARNING: Node-RED flow Projects are currently enabled in server/node-red-settings.js."); 
                 log.warn(TAG + "WARNING: However Node-RED Projects are NOT supported in PRODUCTION MODE");
                 log.warn(TAG + "WARNING: Hence ignoring Node-RED flow Projects setting in server/node-red-settings.js. and DISABLING Projects");
-                fileSettings.editorTheme.projects.enabled = false;
-                projectsEnabled = false;
             } else {
-                if(process.env["DISABLE_NODE_RED_PROJECTS"]) {
-                    if (process.env["DISABLE_NODE_RED_PROJECTS"] === "true" || process.env["DISABLE_NODE_RED_PROJECTS"] === "1") {
-                        fileSettings.editorTheme.projects.enabled = false;
-                        projectsEnabled = false;
-                        log.info(TAG + "Node-RED flow Projects are DISABLED as env variable DISABLE_NODE_RED_PROJECTS is set to " + process.env["DISABLE_NODE_RED_PROJECTS"] + ", overriding server/node-red-settings.js");
-                    } else {
-                        log.info(TAG + "Node-RED flow Projects are ENABLED as env variable DISABLE_NODE_RED_PROJECTS is set to " + process.env["DISABLE_NODE_RED_PROJECTS"] + ", overriding server/node-red-settings.js");
-                    }
-                } else {
-                    log.info(TAG + "Node-RED flow Projects are ENABLED via setting in server/node-red-settings.js. editorTheme.projects.enabled = true");
-                }
-            }
-        } else {
-            if(PRODUCTION_MODE) {
                 log.info(TAG + "Node-RED flow Projects are DISABLED as we are in PRODUCTION MODE.", "( env variable NODE_ENV =", process.env["NODE_ENV"]);
+            }
+            fileSettings.editorTheme.projects.enabled = false;
+            projectsEnabled = false;
+        } else {
+            if(process.env["DISABLE_NODE_RED_PROJECTS"]) {
+                if (process.env["DISABLE_NODE_RED_PROJECTS"] === "true" || process.env["DISABLE_NODE_RED_PROJECTS"] === "1") {
+                    fileSettings.editorTheme.projects.enabled = false;
+                    projectsEnabled = false;
+                    log.info(TAG + "Node-RED flow Projects are DISABLED as env variable DISABLE_NODE_RED_PROJECTS is set to " + process.env["DISABLE_NODE_RED_PROJECTS"] + ", overriding server/node-red-settings.js");
+                } else {
+                    log.info(TAG + "Node-RED flow Projects are ENABLED as env variable DISABLE_NODE_RED_PROJECTS is set to " + process.env["DISABLE_NODE_RED_PROJECTS"] + ", overriding server/node-red-settings.js");
+                }
             } else {
-                log.info(TAG + "Node-RED flow Projects are DISABLED via setting in server/node-red-settings.js. - editorTheme.projects.enabled = false");
+                log.info(TAG + "Node-RED flow Projects are " + (projectsEnabled ? "ENABLED" : "DISABLED") + " via setting in server/node-red-settings.js. editorTheme.projects.enabled = " + projectsEnabled);
             }
         }
     }
