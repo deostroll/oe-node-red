@@ -18,7 +18,7 @@ var express = require("express");
 var RED = require("node-red");
 var loopback = require('loopback');
 var path = require('path');
-var _log = require('oe-logger')('node-red');
+var log = require('oe-logger')('node-red.boot');
 var bodyParser = require('body-parser');
 var messaging = require('../../../oe-cloud/lib/common/global-messaging');
 var broadcasterClient = require('../../../oe-cloud/lib/common/broadcaster-client.js');
@@ -185,7 +185,7 @@ function initApp(app, server) {
                 if (req.method === "POST") {
                     // Query DB for all flows (for all users/tenants)
                     NodeRedFlows.find({}, options, function findCb(err, results) {
-                        if (err) console.log(err);
+                        if (err) log.error(err.message? err.message: err);
                         if (!results) results = [];
                         // Get the ids of the current flows in the request, being saved 
                         var newids = req.body.flows.map(function (f) {
@@ -217,7 +217,7 @@ function initApp(app, server) {
                         // as fresh (possibly updated) nodes will be saved from the current request
                         // via the storage module's saveNodes() function 
                         NodeRedFlows.deleteAll({id: {inq: idsToDelete}}, options, function deleteCb(err, results) {
-                            if(err) console.log(err);
+                            if(err) log.error(err.message? err.message: err);
                             next();
                         });
                     });
@@ -250,7 +250,7 @@ function initApp(app, server) {
                                     result_flows.push(f);
                             });
                         } else {
-                            console.log(TAG + "No flows in response, json=", json);
+                            log.info(TAG + "No flows in response, json=", json);
                         }
 
                         // Setting the results back into the body of the response and sending to client
@@ -289,47 +289,56 @@ function initApp(app, server) {
 // In the sane default, PROJECTS are enabled, by default if we are in DEVELOPMENT MODE. 
 // It can be disabled by setting env variable DISABLE_NODE_RED_PROJECTS to true or 1
 function getSettings(server) {
-    console.log('\n===========================Node-RED================================\n');
-    if(PRODUCTION_MODE) console.log(TAG + "We are in PRODUCTION MODE ( env variable NODE_ENV = "+ process.env["NODE_ENV"] +" )");
-    else console.log(TAG + "We are in DEVELOPMENT MODE");
+    log.info('===========================Node-RED================================\n');
+    if(PRODUCTION_MODE) log.info(TAG + "We are in PRODUCTION MODE ( env variable NODE_ENV = "+ process.env["NODE_ENV"] +" )");
+    else log.info(TAG + "We are in DEVELOPMENT MODE");
     if (server.get('disableNodered') === true) {
-        console.log(TAG + 'oe-node-red (Node-RED integration) is disabled via config.json: (disableNodered: true)');
-        console.log('\n===================================================================\n');
+        log.info(TAG + 'oe-node-red (Node-RED integration) is disabled via config.json: (disableNodered: true)');
+        log.info('===================================================================\n');
 
         return false;
     }
-    console.log(TAG + 'oe-node-red (Node-RED integration) is ENABLED by default. (To disable, set disableNodered: true in server/config.json)');
+    log.info(TAG + 'oe-node-red (Node-RED integration) is ENABLED by default. (To disable, set disableNodered: true in server/config.json)');
     var settings;
     var fileSettings;
     var projectsEnabled = true;
     try {
         var fileSettings = require('../../../../server/node-red-settings.js');
     } catch (e) {
-        console.log(TAG + 'Settings file server/node-red-settings.js is not present.');
-        console.log(TAG + "Default Node-RED settings will be provided from code/environment variables.");
+        log.warn(TAG + 'Settings file server/node-red-settings.js is not present.');
+        log.warn(TAG + "Default Node-RED settings will be provided from code/environment variables.");
     }
     if(fileSettings) {    
-        console.log(TAG + "Using Node-RED settings from settings file: server/node-red-settings.js");
-        console.log(TAG + "No NR settings are provided in code, except the storage module.");
+        log.info(TAG + "Using Node-RED settings from settings file: server/node-red-settings.js");
+        log.info(TAG + "No NR settings are provided in code, except the storage module.");
         // Flag to indicate whether PROJECTS are enabled of not
         projectsEnabled = fileSettings.editorTheme && fileSettings.editorTheme.projects && fileSettings.editorTheme.projects.enabled === true;
         if(projectsEnabled) {
             if(PRODUCTION_MODE) {
-                console.log(TAG + "WARNING: Node-RED flow Projects are currently enabled in server/node-red-settings.js. Node-RED Projects are not supported in PRODUCTION MODE");
-                console.log(TAG + "WARNING: Ignoring Node-RED flow Projects setting in server/node-red-settings.js. ");
+                log.warn(TAG + "WARNING: Node-RED flow Projects are currently enabled in server/node-red-settings.js."); 
+                log.warn(TAG + "WARNING: However Node-RED Projects are NOT supported in PRODUCTION MODE");
+                log.warn(TAG + "WARNING: Hence ignoring Node-RED flow Projects setting in server/node-red-settings.js. and DISABLING Projects");
                 fileSettings.editorTheme.projects.enabled = false;
                 projectsEnabled = false;
             } else {
-                if (process.env["DISABLE_NODE_RED_PROJECTS"] && (process.env["DISABLE_NODE_RED_PROJECTS"].toLowerCase() === "true" || process.env["DISABLE_NODE_RED_PROJECTS"] === "1")) {
-                    fileSettings.editorTheme.projects.enabled = false;
-                    projectsEnabled = false;
-                    console.log(TAG + "Node-RED flow Projects are DISABLED as env variable DISABLE_NODE_RED_PROJECTS is set to", process.env["DISABLE_NODE_RED_PROJECTS"] + ",", "overriding server/node-red-settings.js");
+                if(process.env["DISABLE_NODE_RED_PROJECTS"]) {
+                    if (process.env["DISABLE_NODE_RED_PROJECTS"] === "true" || process.env["DISABLE_NODE_RED_PROJECTS"] === "1") {
+                        fileSettings.editorTheme.projects.enabled = false;
+                        projectsEnabled = false;
+                        log.info(TAG + "Node-RED flow Projects are DISABLED as env variable DISABLE_NODE_RED_PROJECTS is set to " + process.env["DISABLE_NODE_RED_PROJECTS"] + ", overriding server/node-red-settings.js");
+                    } else {
+                        log.info(TAG + "Node-RED flow Projects are ENABLED as env variable DISABLE_NODE_RED_PROJECTS is set to " + process.env["DISABLE_NODE_RED_PROJECTS"] + ", overriding server/node-red-settings.js");
+                    }
                 } else {
-                    console.log(TAG + "Node-RED flow Projects are ENABLED via setting in server/node-red-settings.js. editorTheme.projects.enabled = true");
+                    log.info(TAG + "Node-RED flow Projects are ENABLED via setting in server/node-red-settings.js. editorTheme.projects.enabled = true");
                 }
             }
         } else {
-            console.log(TAG + "Node-RED flow Projects are DISABLED via setting in server/node-red-settings.js. - editorTheme.projects.enabled = false");
+            if(PRODUCTION_MODE) {
+                log.info(TAG + "Node-RED flow Projects are DISABLED as we are in PRODUCTION MODE.", "( env variable NODE_ENV =", process.env["NODE_ENV"]);
+            } else {
+                log.info(TAG + "Node-RED flow Projects are DISABLED via setting in server/node-red-settings.js. - editorTheme.projects.enabled = false");
+            }
         }
     }
 
@@ -345,16 +354,21 @@ function getSettings(server) {
         var nodeRedAudit = server.get('nodeRedAudit') || false;
         projectsEnabled = true;
         var projectsDir = server.get('flowProjectsDir') ? server.get('flowProjectsDir') : nodeRedUserDir;
-        if (process.env["DISABLE_NODE_RED_PROJECTS"] === "true" || process.env["DISABLE_NODE_RED_PROJECTS"] === "1") {
+        if (PRODUCTION_MODE) {
             projectsEnabled = false;
-            console.log(TAG + "Node-RED flow Projects are DISABLED as env variable DISABLE_NODE_RED_PROJECTS is set to", process.env["DISABLE_NODE_RED_PROJECTS"]);
+            log.info(TAG + "Node-RED flow Projects are DISABLED as we are in PRODUCTION MODE.", "( env variable NODE_ENV =", process.env["NODE_ENV"]);
         } else {
-            if(PRODUCTION_MODE) {
+            if(process.env["DISABLE_NODE_RED_PROJECTS"] === "true" || process.env["DISABLE_NODE_RED_PROJECTS"] === "1") {
                 projectsEnabled = false;
-                console.log(TAG + "Node-RED flow Projects are DISABLED as we are in PRODUCTION MODE.", "( env variable NODE_ENV =", process.env["NODE_ENV"]);
+                log.info(TAG + "Node-RED flow Projects are DISABLED as env variable DISABLE_NODE_RED_PROJECTS is set to", process.env["DISABLE_NODE_RED_PROJECTS"]);
             } else {
-                projectsEnabled = true;
-                console.log(TAG + "Node-RED flow Projects are ENABLED by default as we are in DEVELOPMENT MODE.");
+                if(!(server.get('disableNodeRedProjects') === null || server.get('disableNodeRedProjects') === undefined)) {
+                    projectsEnabled = !(server.get('disableNodeRedProjects') === true);
+                    log.info(TAG + "Node-RED flow Projects are " + (projectsEnabled ? "ENABLED" : "DISABLED") + " via configuration. ( server/config.json: disableNodeRedProjects = " + server.get('disableNodeRedProjects'));
+                } else {
+                    projectsEnabled = true;
+                    log.info(TAG + "Node-RED flow Projects are ENABLED by default as we are in DEVELOPMENT MODE.");
+                }
             }
         }
         // create the default settings object
@@ -396,21 +410,21 @@ function getSettings(server) {
     // If we are in PRODUCTION_MODE, Setup oe-cloud specific storage module as storage module  
     if(PRODUCTION_MODE) {
         settings.storageModule = require("../../lib/oe-node-red-storage");
-        console.log(TAG + "Using oe-node-red-storage as storage module as we are in PRODUCTION MODE");
+        log.info(TAG + "Using oe-node-red-storage as storage module as we are in PRODUCTION MODE");
     } else {
-        console.log(TAG + "Using Node-RED's default file storage ( at "+ settings.projectsDir +" ) as we are in DEVELOPMENT MODE");
+        log.info(TAG + "Using Node-RED's default file storage ( at "+ settings.projectsDir +" ) as we are in DEVELOPMENT MODE");
     }
 
     if (server.get('enableNodeRedAdminRole') === true) { 
-        console.log(TAG + "Node-RED Admin Role is ENABLED via setting in server/config.json - enableNodeRedAdminRole: true");
-        console.log(TAG + "Only users with nodeRedAdminRoles (see server/config.json) can use Node-RED");
+        log.info(TAG + "Node-RED Admin Role is ENABLED via setting in server/config.json - enableNodeRedAdminRole: true");
+        log.info(TAG + "Only users with nodeRedAdminRoles (see server/config.json) can use Node-RED");
     }
-    else console.log(TAG + "Node-RED Admin Role is DISABLED (default). Any logged-in user can use Node-RED");
-    console.log(TAG + "Node-RED Starting at http://<this_host>:" + settings.uiPort + settings.httpAdminRoot);
-    console.log("");
-    console.log(TAG + "See documentation at http://evgit/oecloud.io/oe-node-red/ for details on oe-node-red settings");
+    else log.info(TAG + "Node-RED Admin Role is DISABLED (default). Any logged-in user can use Node-RED");
+    log.info(TAG + "Node-RED Starting at http://<this_host>:" + settings.uiPort + settings.httpAdminRoot);
+    log.info("");
+    log.info(TAG + "See documentation at http://evgit/oecloud.io/oe-node-red/ for details on oe-node-red settings");
 
-    console.log('\n===================================================================\n');
+    log.info('===================================================================\n');
 
     settings.editorTheme.projects.appPort = server.get('port'); // application Port is required in Node-RED UI, so adding to settings.
     return settings;                                            // Only Projects settings seem to be passed to UI, so...
@@ -424,7 +438,7 @@ function getSettings(server) {
 // then a default role called NODE_RED_ADMIN is used.
 function isNodeRedAdmin(req, nodeRedAdminRoles) {
     if (!nodeRedAdminRoles || !nodeRedAdminRoles.length) {
-        console.warn(TAG + 'nodeRedAdminRoles is invalid. Should be a string array.');
+        log.warn(TAG + 'nodeRedAdminRoles is invalid. Should be a string array.');
         return false;
     }
     var result = false;
@@ -466,28 +480,28 @@ function logger(msg) {
     delete msg.timestamp;
     switch (level) {
         case 'metric':
-            _log.trace(_log.defaultContext(), msg);
+            log.trace(log.defaultContext(), msg);
             break;
         case 'audit':
-            _log.trace(_log.defaultContext(), msg);
+            log.trace(log.defaultContext(), msg);
             break;
         case 'trace':
-            _log.trace(_log.defaultContext(), msg);
+            log.trace(log.defaultContext(), msg);
             break;
         case 'debug':
-            _log.debug(_log.defaultContext(), msg);
+            log.debug(log.defaultContext(), msg);
             break;
         case 'info':
-            _log.info(_log.defaultContext(), msg);
+            log.info(log.defaultContext(), msg);
             break;
         case 'warn':
-            _log.warn(_log.defaultContext(), msg);
+            log.warn(log.defaultContext(), msg);
             break;
         case 'error':
-            _log.error(_log.defaultContext(), msg);
+            log.error(log.defaultContext(), msg);
             break;
         case 'fatal':
-            _log.fatal(_log.defaultContext(), msg);
+            log.fatal(log.defaultContext(), msg);
             break;
         default:
             break;
