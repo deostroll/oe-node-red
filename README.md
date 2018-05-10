@@ -121,7 +121,7 @@ nodeRedUserScope         boolean        false                     Use this to co
 nodeRedUserDir           string         nodered/                  Same as 'userDir' of node-red-settings.js
                                     
 
-disableNodeRedProjects   boolean        false                     If set to true or 1, disables Node-RED projects 
+disableNodeRedProjects   boolean        false                     If set to true, disables Node-RED projects 
                                                                   If set to anything else, enables Node-RED projects
 
 flowProjectsDir          string         nodered/                  Sets the location where Node-RED stores the flow Git projects. 
