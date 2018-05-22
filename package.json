@@ -1,6 +1,6 @@
 {
   "name": "oe-node-red",
-  "version": "1.0.2",
+  "version": "1.4.0",
   "description": "A meta package to integrate Node-RED with oe-Cloud",
   "main": "index.js",
   "directories": {
@@ -9,14 +9,15 @@
   "dependencies": {
     "node-red": "0.18.4",
     "node-red-contrib-salesforce": "0.0.5",
-    "loopback-connector-nodes-for-Node-RED": "git+http://evgit/oecloud.io/loopback-connector-nodes-for-Node-RED.git#master"
+    "loopback-connector-nodes-for-Node-RED": "git+https://github.com/EdgeVerve/loopback-connector-nodes-for-Node-RED.git#master"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git@10.73.97.24:oecloud.io/oe-node-red.git"
+        
+    "url": "git+https://github.com/EdgeVerve/oe-node-red.git"
   },
   "keywords": [
     "node-red",
