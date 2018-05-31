@@ -8,20 +8,23 @@ To this end, *Node-RED* has been separated from the core *oe-cloud* framework an
 optional "app-list" module for the *oe-cloud*-based app. This new module is called **oe-node-red**.
 
 ## About the module
-**oe-node-red** is a meta-package for *Node-RED* integration with *oe-cloud*, which means that this module is the only dependency required by an
-*oe-cloud* based application to get the *Node-RED* feature. 
+**oe-node-red** is a nodejs module for *Node-RED* integration with *oe-cloud*, which means that this module is the only dependency required by an
+*oe-cloud* based application to get the *Node-RED* feature.
 
-The *oe-node-red* module manages other dependencies like *loopback-connector-for-Node-RED*, and *Node-RED* itself. As of now, the *Node-RED* 
+This module adds a boot-script for starting Node-RED as part of the loopback app boot-up. It also adds a few loopback models to the app for managing Node-RED data.
+
+The *oe-node-red* module also manages other dependencies like *loopback-connector-for-Node-RED*, and *Node-RED* itself. As of now, the *Node-RED* 
 dependency version is changed from 16.x to 18.x, which has various improvements including `projects`.
 
 
 ### About the new `projects` feature
 
 `projects` are meant to be enabled in development environment only. In production, you'd typically 
-disable projects. While in `projects` mode (development), flows that are created using the UI are 
+disable projects. While in development mode, `projects` are enabled by default, and flows that are created using the UI are 
 saved locally, in the filesystem, and you have the option of connecting all flows to a single Git 
 repository through the Node-RED UI. Standard Git features such as check in, check out, commit,
-history, etc., are available via the Node-RED UI.
+history, etc., are available via the Node-RED UI. Optionally, `projects` may be turned off via configuration.
+
 See here for more info: https://nodered.org/docs/user-guide/projects/
 
 
@@ -97,7 +100,7 @@ setting                  type           default (if not defined)  Description
 -------------------------------------------------------------------------------------------------------------------
 disableNodered           boolean        false                     Use this to turn off Node-RED (despite having the *oe-node-red* module)
                                                                   by setting this parameter to true. Default is false, i.e., Node-RED is
-                                                                  enabled by default.
+                                                                  enabled by default. See notes below for corresponding environment variable.
                                                                   
 enableNodeRedAdminRole   boolean        false                     Use this to allow only users having certain roles to access the Node-RED UI
                                                                   by setting this parameter to true. Default is false, which allows all users
@@ -118,11 +121,11 @@ nodeRedUserScope         boolean        false                     Use this to co
 nodeRedUserDir           string         nodered/                  Same as 'userDir' of node-red-settings.js
                                     
 
-projectsEnabled          boolean        false                     If set to true, enables projects and disables oe-node-red-storage module
-                                                                  If set to false, disables projects and enables oe-node-red-storage module
+disableNodeRedProjects   boolean        false                     If set to true, disables Node-RED projects. If set to anything else, enables 
+                                                                  Node-RED projects. See notes below for corresponding environment variable.
 
-flowProjectsDir          string         nodered/projects          Sets the location where Node-RED stores the flow Git projects. Applicable
-                                                                  when projectsEnabled is set to true.                                                                  
+flowProjectsDir          string         nodered/                  Sets the location where Node-RED stores the flow Git projects. 
+                                                                  Applicable when Node-RED projects are enabled.                                                                  
                                                                   
 -------------------------------------------------------------------------------------------------------------------                                                                  
 </pre>
@@ -149,10 +152,10 @@ module.exports = {                                  // All defaults mentioned be
   httpRequestTimeout: 120000,                       // default: not set
   editorTheme: {       
     projects: {
-      enabled: false                                // default: false
+      enabled: true                                 // default: true
     }
   },
-  projectsDir: "D:/NR",                             // default: nodered/projects
+  projectsDir: "nodered/",                          // default: nodered/
   httpAdminRoot: '/red',                            // default: /red
   httpNodeRoot: '/redapi',                          // default: /red
   userDir: 'nodered/',                              // default: nodered/
@@ -170,21 +173,31 @@ module.exports = {                                  // All defaults mentioned be
 
 #### Notes
 
+As mentioned above, Node-RED integration can be disabled from the server/config.json. It can also be disabled by 
+setting the environment variable:
+```console
+DISABLE_NODE_RED=true   (or 1)
+```
+
 If `server/node-red-settings.js` is not present, the defaults that are provided are as in the comments above.
-In this case, you can set `nodeRedUserDir`, `projectsEnabled`, and `flowProjectsDir` in `server/config.json`
+In this case, you can set `nodeRedUserDir`, `disableNodeRedProjects`, and `flowProjectsDir` in `server/config.json`
 to override the corresponding defaults, as shown in the `server/config.json settings` section above. 
 
 If `server/node-red-settings.js` is not present, `projects` can be enabled/disabled from `server/config.json settings`
 as mentioned above. This `project` setting can further be overridden using an environment variable:
 ```console
-ENABLE_NODE_RED_PROJECTS=true   (or 1)
+DISABLE_NODE_RED_PROJECTS=true   (or 1)
 ```
 
-If `projects` are disabled (default), then *Node-RED*'s storage module is set to the *oe-cloud* specific database 
-storage module (`'../../lib/oe-node-red-storage'`), and *Node-RED flows* are saved to the database, with multi-tenancy.
+If **production** mode is enabled by setting the environment variable `NODE_ENV` to `production`, then *Node-RED*'s storage 
+module is set to the *oe-cloud* specific database storage module (`'../../lib/oe-node-red-storage'`), and *Node-RED flows* 
+are saved to the database, with multi-tenancy. 
 
-If `projects` are enabled, then *Node-RED* uses its default filesystem storage. *Flows* on the filesystem won't 
-be multi-tenant. All *flows* from the filesystem will be accessible to any user.
+`projects` cannot be enabled in **production** mode. If they are enabled in configuration while in this mode, they will
+be disabled with a warning in the logs.
+
+If `projects` are enabled (in non-production mode), then *Node-RED* uses its default filesystem storage. 
+*Flows* on the filesystem won't be multi-tenant. All *flows* from the filesystem will be accessible to any user.
 
 ## Migration from oe-cloud v 1.2.0/1.3.0
 In this new implementation of *Node-RED* integration, flow-nodes are now stored as separate records, one record per node.
