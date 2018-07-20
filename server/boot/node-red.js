@@ -5,7 +5,7 @@
  *
  */
 /**
- * This is a loopback boot script that integrates and starts Node-RED within the 
+ * This is a loopback boot script that integrates and starts Node-RED within the
  * oe-cloud based application.
  * Node-RED is to be started on a port different from the application port.
  * This can be configured in the server/node-red-settings.js file. Defaults to 3001.
@@ -37,8 +37,8 @@ module.exports = function startNodeRed(server, callback) {
 
     // Standard code for Node-RED integration in an Express app follows
     // (https://nodered.org/docs/embedding)
-    
-    // Create an Express app for Node-RED (standard way of NR 
+
+    // Create an Express app for Node-RED (standard way of NR
     var app = express();
 
     // initialize app with oe-cloud specific handlers
@@ -70,7 +70,7 @@ module.exports = function startNodeRed(server, callback) {
 // initializes app with oe-cloud specific handlers
 function initApp(app, server) {
 
-    // Modifying createNode function to inject callContext into msg 
+    // Modifying createNode function to inject callContext into msg
     var _createNode = RED.nodes.createNode;
     RED.nodes.createNode = function (thisnode, config) {
         thisnode.on('input', function (msg) {
@@ -139,7 +139,7 @@ function initApp(app, server) {
     // Flag indicating if PROJECTS are enabled
     var projectsEnabled = settings.editorTheme && settings.editorTheme.projects && settings.editorTheme.projects.enabled === true;
 
-    // key used to fetch flows for the NR UI. It decides whether flows are isolated based on 
+    // key used to fetch flows for the NR UI. It decides whether flows are isolated based on
     // tenant or user. Set 'nodeRedUserScope' to true to make it user specific.
     var flowScope = server.get('nodeRedUserScope') === true ? 'remoteUser' : 'tenantId';
 
@@ -156,11 +156,11 @@ function initApp(app, server) {
             }
             next();
         });
-    } 
+    }
 
-    // Add the hook for publishing 'reloadNodeRedFlows' event message 
-    // upon saving a flow, subscribing to the same event, as well as 
-    // intercept the '/red/flows/' URL calls from NR UI to make NR multi-tenant - 
+    // Add the hook for publishing 'reloadNodeRedFlows' event message
+    // upon saving a flow, subscribing to the same event, as well as
+    // intercept the '/red/flows/' URL calls from NR UI to make NR multi-tenant -
     // only if we are in PRODUCTION_MODE
     if (PRODUCTION_MODE) {
 
@@ -187,7 +187,7 @@ function initApp(app, server) {
                     NodeRedFlows.find({}, options, function findCb(err, results) {
                         if (err) log.error(err.message? err.message: err);
                         if (!results) results = [];
-                        // Get the ids of the current flows in the request, being saved 
+                        // Get the ids of the current flows in the request, being saved
                         var newids = req.body.flows.map(function (f) {
                             return f.id;
                         });
@@ -209,13 +209,13 @@ function initApp(app, server) {
                         });
 
                         // set the new complete res array (including DB flows and updated flows)
-                        // into the request so that NR gets the complete flow list for 
+                        // into the request so that NR gets the complete flow list for
                         // execution and saving
                         req.body.flows = res;
 
                         // Deleting all nodes that belong to the current user from database
                         // as fresh (possibly updated) nodes will be saved from the current request
-                        // via the storage module's saveNodes() function 
+                        // via the storage module's saveNodes() function
                         NodeRedFlows.deleteAll({id: {inq: idsToDelete}}, options, function deleteCb(err, results) {
                             if(err) log.error(err.message? err.message: err);
                             next();
@@ -223,8 +223,8 @@ function initApp(app, server) {
                     });
 
                     // If NR is fetching flows, the request triggers NR to call getFlows()
-                    // of the storage module. The getFlows() has to return all flows in the DB, as 
-                    // NR caches the result and uses the result a the "complete" list of flows to 
+                    // of the storage module. The getFlows() has to return all flows in the DB, as
+                    // NR caches the result and uses the result a the "complete" list of flows to
                     // execute. The result of storage.getFlows() is filtered in the following code
                     // based on user/tenant (see flowScope above) and the filtered result is sent
                     // as the response to the NR UI
@@ -243,7 +243,7 @@ function initApp(app, server) {
                         if (json && json.flows) {
                             rev = json.rev;
                             // json.flows has all flows from DB, returned by storage.getFlows()
-                            // Here, we're filtering this list based on the flowScope, and collecting 
+                            // Here, we're filtering this list based on the flowScope, and collecting
                             // the filtered results in result_flows
                             json.flows.forEach(function (f) {
                                 if (f.callContext && f.callContext.ctx && f.callContext.ctx[flowScope] === req.callContext.ctx[flowScope])
@@ -265,7 +265,7 @@ function initApp(app, server) {
             } else next();
         });
 
-        // If we are NOT in PRODUCTION_MODE, i.e., DEVELOPMENT MODE,don't do any of 
+        // If we are NOT in PRODUCTION_MODE, i.e., DEVELOPMENT MODE,don't do any of
         // the above, but just add callContext while saving flows
     } else {
         app.use(function (req, res, next) {
@@ -286,7 +286,7 @@ function initApp(app, server) {
 
 // This function returns a settings object. Settings is set to the object exported from
 // server/node-red-settings.js if it exists. Else, it is set to a sane default.
-// In the sane default, PROJECTS are enabled, by default if we are in DEVELOPMENT MODE. 
+// In the sane default, PROJECTS are enabled, by default if we are in DEVELOPMENT MODE.
 // It can be disabled by setting env variable DISABLE_NODE_RED_PROJECTS to true or 1
 function getSettings(server) {
     log.info('===========================Node-RED================================\n');
@@ -301,7 +301,7 @@ function getSettings(server) {
         log.info(TAG + 'oe-node-red (Node-RED integration) is DISABLED via environment variable: (DISABLE_NODE_RED = ' + process.env["DISABLE_NODE_RED"]);
         log.info('===================================================================\n');
         return false;
-    }    
+    }
     log.info(TAG + 'oe-node-red (Node-RED integration) is ENABLED by default. (To disable, set disableNodered: true in server/config.json)');
     var settings;
     var fileSettings;
@@ -312,14 +312,14 @@ function getSettings(server) {
         log.warn(TAG + 'Settings file server/node-red-settings.js is not present.');
         log.warn(TAG + "Default Node-RED settings will be provided from code/environment variables.");
     }
-    if(fileSettings) {    
+    if(fileSettings) {
         log.info(TAG + "Using Node-RED settings from settings file: server/node-red-settings.js");
         log.info(TAG + "No NR settings are provided in code, except the storage module.");
         // Flag to indicate whether PROJECTS are enabled of not
         projectsEnabled = fileSettings.editorTheme && fileSettings.editorTheme.projects && fileSettings.editorTheme.projects.enabled === true;
         if(PRODUCTION_MODE) {
             if(projectsEnabled) {
-                log.warn(TAG + "WARNING: Node-RED flow Projects are currently enabled in server/node-red-settings.js."); 
+                log.warn(TAG + "WARNING: Node-RED flow Projects are currently enabled in server/node-red-settings.js.");
                 log.warn(TAG + "WARNING: However Node-RED Projects are NOT supported in PRODUCTION MODE");
                 log.warn(TAG + "WARNING: Hence ignoring Node-RED flow Projects setting in server/node-red-settings.js. and DISABLING Projects");
             } else {
@@ -382,7 +382,7 @@ function getSettings(server) {
             projectsDir: projectsDir,
             httpAdminRoot: '/red',
             httpNodeRoot: '/redapi',
-            userDir: projectsEnabled? projectsDir : nodeRedUserDir,   // Setting userDir to projectsDir if Projects are enabled, as this is where NR 
+            userDir: projectsEnabled? projectsDir : nodeRedUserDir,   // Setting userDir to projectsDir if Projects are enabled, as this is where NR
             nodesDir: '../nodes',                                     // stores Projects, and there is no setting provided by NR specifically for projectsDir
             flowFile: 'node-red-flows.json',
             logging: {
@@ -403,11 +403,11 @@ function getSettings(server) {
         };
     } else {
         settings = fileSettings;
-        if(projectsEnabled && settings.projectsDir) 
+        if(projectsEnabled && settings.projectsDir)
             settings.userDir = settings.projectsDir;  // See comments on projectsDir/userDir above
     }
 
-    // If we are in PRODUCTION_MODE, Setup oe-cloud specific storage module as storage module  
+    // If we are in PRODUCTION_MODE, Setup oe-cloud specific storage module as storage module
     if(PRODUCTION_MODE) {
         settings.storageModule = require("../../lib/oe-node-red-storage");
         log.info(TAG + "Using oe-node-red-storage as storage module as we are in PRODUCTION MODE");
@@ -415,14 +415,14 @@ function getSettings(server) {
         log.info(TAG + "Using Node-RED's default file storage ( at "+ settings.projectsDir +" ) as we are in DEVELOPMENT MODE");
     }
 
-    if (server.get('enableNodeRedAdminRole') === true) { 
+    if (server.get('enableNodeRedAdminRole') === true) {
         log.info(TAG + "Node-RED Admin Role is ENABLED via setting in server/config.json - enableNodeRedAdminRole: true");
         log.info(TAG + "Only users with nodeRedAdminRoles (see server/config.json) can use Node-RED");
     }
     else log.info(TAG + "Node-RED Admin Role is DISABLED (default). Any logged-in user can use Node-RED");
     log.info(TAG + "Node-RED Starting at http://<this_host>:" + settings.uiPort + settings.httpAdminRoot);
     log.info("");
-    log.info(TAG + "See documentation at http://evgit/oecloud.io/oe-node-red/ for details on oe-node-red settings");
+    log.info(TAG + "See documentation at https://github.com/EdgeVerve/oe-node-red for details on oe-node-red settings");
 
     log.info('===================================================================\n');
 
@@ -450,7 +450,7 @@ function isNodeRedAdmin(req, nodeRedAdminRoles) {
                 if (result) break;
             };
         }
-    } 
+    }
     return result;
 }
 
