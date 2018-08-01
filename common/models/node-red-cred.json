@@ -2,12 +2,14 @@
     "name": "NodeRedCred",
     "base": "PersistedModel",
     "idinjection": true,
-    "strict": false,
+    "strict": true,
     "description": "This model stores node-red credentials",
     "options": {
         "isFrameworkModel": true
     },
     "properties": {
+        "d" : "string",
+        "t" : "number"
     },
     "validations": [],
     "relations": {},

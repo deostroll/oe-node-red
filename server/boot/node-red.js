@@ -185,8 +185,15 @@ function initApp(app, server) {
                 if (req.method === "POST") {
                     // Query DB for all flows (for all users/tenants)
                     NodeRedFlows.find({}, options, function findCb(err, results) {
+                        var res;
                         if (err) log.error(err.message? err.message: err);
-                        if (!results) results = [];
+                        if (!results) res = [];
+                        else {
+                            res = [];
+                            results.forEach(function(result) {
+                                res.push(result.node);
+                            });
+                        }
                         // Get the ids of the current flows in the request, being saved 
                         var newids = req.body.flows.map(function (f) {
                             return f.id;
@@ -197,7 +204,7 @@ function initApp(app, server) {
                         var idsToDelete = [];
                         // Get all flows in DB other than the current user/tenant's flows
                         // into the res array, and the current user/tenant's flow ids into idsToDelete array
-                        results.forEach(function (f) {
+                        res.forEach(function (f) {
                             if (f.callContext.ctx[flowScope] !== req.callContext.ctx[flowScope]) res.push(f.__data);
                             else idsToDelete.push(f.__data.id);
                         });
