@@ -185,13 +185,13 @@ function initApp(app, server) {
                 if (req.method === "POST") {
                     // Query DB for all flows (for all users/tenants)
                     NodeRedFlows.find({}, options, function findCb(err, results) {
-                        var res;
+                        var results2;
                         if (err) log.error(err.message? err.message: err);
-                        if (!results) res = [];
+                        if (!results) results2 = [];
                         else {
-                            res = [];
+                            results2 = [];
                             results.forEach(function(result) {
-                                res.push(result.node);
+                                results2.push(result.node);
                             });
                         }
                         // Get the ids of the current flows in the request, being saved 
@@ -204,9 +204,9 @@ function initApp(app, server) {
                         var idsToDelete = [];
                         // Get all flows in DB other than the current user/tenant's flows
                         // into the res array, and the current user/tenant's flow ids into idsToDelete array
-                        res.forEach(function (f) {
-                            if (f.callContext.ctx[flowScope] !== req.callContext.ctx[flowScope]) res.push(f.__data);
-                            else idsToDelete.push(f.__data.id);
+                        results2.forEach(function (f) {
+                            if (f.callContext.ctx[flowScope] !== req.callContext.ctx[flowScope]) res.push(f);
+                            else idsToDelete.push(f.id);
                         });
 
                         // Append the flows from current req into res, after adding callContext
