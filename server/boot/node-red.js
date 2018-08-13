@@ -64,6 +64,7 @@ module.exports = function startNodeRed(server, callback) {
     server1.listen(port);
 
     // Start the runtime
+    RED.stop();
     RED.start();
 }
 
@@ -120,12 +121,13 @@ function initApp(app, server) {
     app.use(post_auth());
 
     // parse application/x-www-form-urlencoded
-    app.use(bodyParser.urlencoded({
-        extended: false
-    }));
+    var urlEncodedOpts = server && server.get('remoting') && server.get('remoting').urlencoded ? server.get('remoting').urlencoded : { extended: false, limit: "2048kb" };
+    app.use(bodyParser.urlencoded(urlEncodedOpts));
 
     // parse application/json
-    app.use(bodyParser.json());
+    var jsonOpts = server && server.get('remoting') && server.get('remoting').json ? server.get('remoting').json : { limit: "2048kb" };
+    app.use(bodyParser.json(jsonOpts));
+
 
     // Create the settings object - server/node-red-settings.js will be used if present
     // else minimal default values will be used from this code, in which case PROJECTS
