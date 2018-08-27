@@ -212,11 +212,12 @@ To address this, the following migration strategy can be adopted:
 2. Export your *Node-RED* flows to the clipboard using the ``Menu --> Export --> Clipboard`` option.
 3. Save the contents of the clipboard to a local file, with filename same as the tab name.
 4. Repeat steps 2 and 3 for all tabs in your *Node-RED* interface, at the end of which you should have as many local files as there are tabs in your *Node-RED* UI.
-5. Delete all your *Node-RED* flow-data from the database (*NodeRedFlow* table) by deleting all your flows (from all tabs) using your *Node-RED* UI.
-6. Upgrade to the latest version of oe-cloud which includes the new implementation of *Node-RED* integration.
+5. Delete all your *Node-RED* flow-data from the **NodeRedFlow** table in the application database.
+6. Upgrade to the latest version of oe-cloud which includes the new implementation of *Node-RED* integration (Follow instructions from **How to add Node-RED feature in oe-cloud -based app?** section above).
 7. Login to your application and open the new *Node-RED* UI
 8. Import the flows from each of the files created in step 3 back into *Node-RED*, naming the tabs the same as the filename, using the ``Menu --> Import --> Clipboard`` option
 9. Run a sanity test on your flows.
+10. Export the new flow data from the **NodeRedFlow** table as a JSON array and use it in your migration boot-script, if you are using the ``node . -m`` approach.
 
 
 
