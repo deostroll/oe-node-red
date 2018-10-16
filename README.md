@@ -1,5 +1,21 @@
 # oe-node-red
 
+### What's new (Changes from master branch):
+<pre>
+
+1. Removed the concept of environment variable (NODE_ENV) deciding whether flows are saved to database or not. 
+   Now flows are always saved to the database
+2. In parallel to the DB persistence, a node-red-flows.json file is also created in $PROJECT_DIR/nodered/ folder
+3. This node-red-flows.json file can be committed to source-control
+4. It can also be directly used for initial data seeding in production as the data format of this file is the same 
+   as that of the NodeRedFlow table.
+5. Node-Red can now be accessed on the same port as the application. There's no need to set the uiPort in Node-Red settings.
+6. The optional Node-Red Settings file at $PROJECT_DIR/server/node-red-settings.js overrides defaults provided in code
+   on a per-parameter basis. So you can provide partial settings in node-red-settings.js
+
+</pre>
+
+
 ## Table of Contents
 - [Introduction](#Introduction)
 - [About the module](#About the module)
