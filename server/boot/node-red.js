@@ -298,7 +298,7 @@ function getSettings(app) {
 
   log.info(TAG, 'Node-RED Admin Role is ' + (app.get('enableNodeRedAdminRole') === true ? 'ENABLED' : 'DISABLED') + ' via setting in server/config.json - enableNodeRedAdminRole: ' + app.get('enableNodeRedAdminRole'));
   log.info(TAG, (app.get('enableNodeRedAdminRole') === true ? 'Only users with nodeRedAdminRoles (see server/config.json)' : 'Any logged in user') + ' can use Node-RED');
-  log.info(TAG, 'Node-RED Starting at http://<this_host>:' + settings.uiPort + settings.httpAdminRoot);
+  log.info(TAG, 'Node-RED Starting at http://<this_host>:' + app.get('port') + settings.httpAdminRoot);
   log.info(TAG, '');
   log.info(TAG, 'See documentation at http://evgit/oec-next/oe-node-red/ for details on oe-node-red settings');
   return settings;
