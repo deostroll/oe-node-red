@@ -1,6 +1,6 @@
 # oe-node-red module for oe-cloud based applications
 
-### What's new (Changes from master branch):
+### What's new:
 <pre>
 
 1. Removed the concept of environment variable (NODE_ENV) deciding whether flows are saved to database or not. 
