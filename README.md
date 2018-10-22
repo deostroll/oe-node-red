@@ -1,4 +1,4 @@
-# oe-node-red (refactor branch documentation follows:)
+# oe-node-red module for oe-cloud based applications
 
 ### What's new (Changes from master branch):
 <pre>
@@ -15,25 +15,12 @@
 
 </pre>
 
-
-## Table of Contents
-- [Introduction](#Introduction)
-- [About the module](#About the module)
-- [How to add Node-RED feature in oe-cloud -based app](#How to add Node-RED feature in oe-cloud -based app)
-    - [Configuration](#Configuration)
-        - [server/config.json settings](#config.json settings)
-        - [server/node-red-settings.js](#node-red-settings.js)
-        - [Notes](#Notes)
-- [Migration from oe-cloud v 1.2.0/1.3.0/1.4.0](#Migration from oe-cloud)
-
-<a name="Introduction"></a>
 ## Introduction
 **Node-RED** has been a feature of *oe-cloud* framework for some time now, and it has been widely adopted for its extreme ease of use. 
 In order to take advantage of new features introduced in newer versions of *Node-RED*, we need to be able to upgrade *Node-RED* easily and seamlessly.
 To this end, *Node-RED* has been separated from the core *oe-cloud* framework and the *Node-RED* integration is now implemented as an 
 optional "app-list" module for the *oe-cloud*-based app. This new module is called **oe-node-red**.
 
-<a name="About the module"></a>
 ## About the module
 **oe-node-red** is a nodejs module for *Node-RED* integration with *oe-Cloud*, and this module is the only dependency required by an
 *oe-Cloud* based application to get the *Node-RED* feature.
@@ -49,7 +36,7 @@ Unlike previous iterations of *Node-RED* integration in oe-Cloud, now *Node-RED*
 or not. Flows are also saved to `{userDir}/{flowFile}` in parallel. This is to enable source-control of flow data, as well as to aid initial data seeding
 in production.
 
-<a name="How to add Node-RED feature in oe-cloud -based app"></a>
+
 ## How to add Node-RED feature in oe-cloud -based app?
 
 To get the *Node-RED* feature in the application, the **oe-node-red** node module needs to be added 
@@ -69,7 +56,7 @@ package.json  (only part of the file is shown here, with relevant section in bol
        ...
        ...
        ...
-       <b>"oe-node-red": "git+http://evgit/oecloud.io/oe-node-red.git#refactor",</b>
+       <b>"oe-node-red": "git+http://evgit/oec-next/oe-node-red.git#master",</b>
        ...
        ...
 
@@ -92,7 +79,7 @@ server/app-list.json   (Relevant section in bold):
 ]
 </pre>
 
-<a name="Configuration"></a>
+
 ### Configuration
 
 The *oe-node-red* module is configured from two files - 
@@ -100,7 +87,6 @@ The *oe-node-red* module is configured from two files -
 * server/config.json
 * server/node-red-settings.js
 
-<a name="config.json settings"></a>
 #### server/config.json settings
 
 The *oe-node-red* configuration settings in `config.json` are used for high level control, like enabling/disabling *Node-RED*, 
@@ -127,7 +113,7 @@ nodeRedAdminRoles        string array   ["NODE_RED_ADMIN"]        Use this to se
 -------------------------------------------------------------------------------------------------------------------                                                                  
 </pre>
 
-<a name="node-red-settings.js"></a>
+
 #### server/node-red-settings.js
 
 `server/node-red-settings.js` supports the same parameter settings as *Node-RED's* [`settings.js` file](https://nodered.org/docs/configuration). 
@@ -163,7 +149,7 @@ module.exports = {                                  // All defaults mentioned be
 This file (`server/node-red-settings.js`) is optional. In its absence, sane defaults as mentioned above are provided by the *oe-node-red* module. 
 
 
-<a name="Notes"></a>
+
 #### Notes
 
 As mentioned above, *Node-RED* integration can be disabled from the `server/config.json`. It can also be disabled by 
@@ -181,7 +167,7 @@ then the flows won't be persisted to file. Thus, flows would only be saved to da
 During development, the flow data file persisted at `{userDir}/{flowFile}` contains data in the same format as the database table
 holding flows (`NodeRedFlow` table). So this file can be used directly for initial seeding of data in production.
 
-<a name="Migration from oe-cloud"></a>
+
 ## Migration from oe-cloud v 1.2.0/1.3.0/1.4.0
 In this new implementation of *Node-RED* integration, flow-nodes are now stored as separate records, one record per node.
 A record of a node looks like this:

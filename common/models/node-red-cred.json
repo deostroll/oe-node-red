@@ -1,6 +1,6 @@
 ﻿{
     "name": "NodeRedCred",
-    "base": "PersistedModel",
+    "base": "BaseEntity",
     "idinjection": true,
     "strict": true,
     "description": "This model stores node-red credentials",
