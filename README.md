@@ -27,7 +27,7 @@ optional "app-list" module for the *oe-cloud*-based app. This new module is call
 
 This module adds a *loopback* boot-script for starting *Node-RED* as part of the *loopback* app boot-up. It also adds a few loopback models to the app for managing Node-RED data.
 
-The *oe-node-red* module also manages other dependencies like [**oe-node-red-nodes**](http://evgit/oec-next/oe-node-red-nodes), and *Node-RED* itself. 
+The *oe-node-red* module also manages other dependencies like [**loopback-connector-nodes-for-Node-RED**](http://evgit/oecloud.io/loopback-connector-nodes-for-Node-RED), and *Node-RED* itself. 
 As of now, the *Node-RED* dependency version is changed from 16.x to 18.x, which has various improvements over its predecessors.
 
 **Note**:
@@ -56,7 +56,7 @@ package.json  (only part of the file is shown here, with relevant section in bol
        ...
        ...
        ...
-       <b>"oe-node-red": "git+http://evgit/oec-next/oe-node-red.git#master",</b>
+       <b>"oe-node-red": "git+http://evgit/oecloud.io/oe-node-red.git#master",</b>
        ...
        ...
 
