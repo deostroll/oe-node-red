@@ -1,6 +1,6 @@
 {
   "name": "oe-node-red",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "A meta package to integrate Node-RED with oe-Cloud",
   "main": "index.js",
   "directories": {
@@ -12,7 +12,8 @@
     "loopback-connector-nodes-for-Node-RED": "git+https://github.com/EdgeVerve/loopback-connector-nodes-for-Node-RED.git#master"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node postinstall.js"
   },
   "repository": {
     "type": "git",

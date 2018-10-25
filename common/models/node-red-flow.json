@@ -2,12 +2,13 @@
     "name": "NodeRedFlow",
     "base": "PersistedModel",
     "idinjection": true,
-    "strict": false,
+    "strict": true,
     "description": "This model stores node-red flows",
     "options": {
         "isFrameworkModel": true
     },
     "properties": {
+        "node" : "object"
     },
     "validations": [],
     "relations": {},
