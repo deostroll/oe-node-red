@@ -1,28 +1,29 @@
 {
   "name": "oe-node-red",
-  "version": "1.6.0",
-  "description": "A meta package to integrate Node-RED with oe-Cloud",
+  "version": "1.7.0",
+  "description": "This module is an app-list module for oe-Cloud. It provides Node-RED integration for oe-Cloud based applications",
+  "engines": {
+    "node": ">=6"
+  },
   "main": "index.js",
-  "directories": {
-    "lib": "lib"
+  "scripts": {
+    "lint": "eslint .",
+    "fix-lint": "eslint --fix .",
+    "postinstall": "node postinstall.js"
   },
   "dependencies": {
-    "node-red": "0.18.4",
-    "node-red-contrib-salesforce": "0.0.5",
-    "loopback-connector-nodes-for-Node-RED": "git+https://github.com/EdgeVerve/loopback-connector-nodes-for-Node-RED.git#master"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "node postinstall.js"
+    "async": "^2.6.1",
+    "loopback-connector-nodes-for-Node-RED": "git+https://github.com/EdgeVerve/loopback-connector-nodes-for-Node-RED.git#master",
+    "node-red": "~0.18.4",
+    "uuid": "3.1.0"
   },
   "repository": {
     "type": "git",
-        
     "url": "git+https://github.com/EdgeVerve/oe-node-red.git"
   },
   "keywords": [
-    "node-red",
-    "oe-cloud"
+    "oe-node-red",
+    "node-red"
   ],
   "author": "Ajith Vasudevan",
   "license": "MIT"

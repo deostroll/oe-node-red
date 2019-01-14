@@ -1,6 +1,6 @@
 {
     "name": "NodeRedFlow",
-    "base": "PersistedModel",
+    "base": "BaseEntity",
     "idinjection": true,
     "strict": true,
     "description": "This model stores node-red flows",
@@ -10,6 +10,7 @@
     "properties": {
         "node" : "object"
     },
+    "mixins" : { "SoftDeleteMixin"  : false },
     "validations": [],
     "relations": {},
     "acls": [{
