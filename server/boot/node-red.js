@@ -1,6 +1,6 @@
 /**
  *
- * ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+ * ©2018-2019 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
  * Bangalore, India. All Rights Reserved.
  *
  */
@@ -10,18 +10,89 @@
  * The integrated Node-RED can be accessed on the application port itself with "/red" URL.
  */
 
-var RED = require('node-red');
-var loopback = require('loopback');
-var log = require('oe-logger')('node-red');
-var bodyParser = require('body-parser');
-var fs = require('fs');
-var path = require('path');
-var events = require('events');
+const RED = require('node-red');
+const loopback = require('loopback');
+const log = require('oe-logger')('node-red');
+const bodyParser = require('body-parser');
+const path = require('path');
+const events = require('events');
+const _ = require('lodash');
 var eventEmitter = new events.EventEmitter();
-var uuidv4 = require('uuid/v4');
 var NodeRedFlows = loopback.getModelByType('NodeRedFlow');
 var settings;
 var TAG = '    * ';
+var flagOnce = true;
+
+
+// Atul : This function creates wrapper for node-red function while create node.
+// when node-red node class instance is being created, it sets the context to the node.
+function nodeRedWrapper() {
+  const _createNode = RED.nodes.createNode;
+  RED.nodes.createNode = function (node, def) {
+    _createNode(node, def);
+    node.callContext = def.callContext;
+    if (flagOnce) {
+      flagOnce = false;
+      node.constructor.super_.prototype._receive = node.constructor.super_.prototype.receive;
+      node.constructor.super_.prototype.receive = function receiveFn(msg) {
+        if (!msg) {
+          msg = {};
+        }
+        msg.callContext = this.callContext;
+        this._receive(msg);
+      };
+      node.constructor.super_.prototype._on_ = node.constructor.super_.prototype._on;
+      node.constructor.super_.prototype._on = function onEventHandlerFn(event, callback) {
+        return this._on_(event, function onEventCb(msg) {
+          if (!msg) {
+            msg = {};
+          }
+          msg.callContext = this.callContext;
+          callback.call(this, msg);
+        });
+      };
+    }
+  };
+}
+
+// Atul : This function will refresh the flows for given context.
+// Delete all existing flows and refresh from POSTed flows.
+// Design issue - we are relying on node.id posted from client. Theoratically, it can be manipulated
+function handlePost(req, res, cb) {
+  var reqFlows = req.body.flows;
+  var redNodes = RED.nodes;
+  var nodeFlows = redNodes.getFlows();
+
+  var allflows = [];
+  var flowModel = loopback.findModel('NodeRedFlow');
+  flowModel.find({}, req.callContext, function (err, dbFlows) {
+    if (err) {
+      return cb(err);
+    }
+    if (nodeFlows && nodeFlows.flows && nodeFlows.flows.forEach) {
+      nodeFlows.flows.forEach(function (item) {
+        allflows.push(item);
+      });
+    }
+    if (dbFlows && dbFlows.forEach) {
+      dbFlows.forEach(function (item) {
+        _.remove(allflows, function removeFn(o) {
+          if (!item.node) {
+            return false;
+          }
+          return (o.id === item.node.id && o.type === item.node.type);
+        });
+      });
+    }
+    if (reqFlows && reqFlows.forEach) {
+      reqFlows.forEach(function (item) {
+        item.callContext = req.callContext;
+        allflows.push(item);
+      });
+    }
+    return cb(null, allflows);
+  });
+}
 
 // The boot function
 module.exports = function startNodeRed(app, callback) {
@@ -49,13 +120,6 @@ module.exports = function startNodeRed(app, callback) {
 // initializes app with oe-cloud specific handlers
 function initApp(app) {
   // Modifying createNode function to inject callContext into msg
-  var _createNode = RED.nodes.createNode;
-  RED.nodes.createNode = function (thisnode, config) {
-    thisnode.on('input', function (msg) {
-      msg.callContext = config.callContext;
-    });
-    _createNode(thisnode, config);
-  };
 
   var redEvents = RED.events;
   redEvents.on('nodes-started', function () {
@@ -63,6 +127,7 @@ function initApp(app) {
     console.log('[' + new Date().toISOString() + '] ', 'INFO: Node-RED nodes (re)started');
   });
 
+  nodeRedWrapper();
   // parse application/x-www-form-urlencoded
   var urlEncodedOpts = app && app.get('remoting') && app.get('remoting').urlencoded ? app.get('remoting').urlencoded : { extended: false, limit: '2048kb' };
   app.use(bodyParser.urlencoded(urlEncodedOpts));
@@ -125,60 +190,13 @@ function initApp(app) {
       // remove all flows belonging to current user from DB, and save the
       // current flows from request to DB
       if (req.method === 'POST') {
-        // Get the current user flows from request
-        var userFlows = req.body.flows;
-        // Remove all flows of current user from DB
-        NodeRedFlows.remove({}, req.callContext, function findCb(err, results) {
-          /* istanbul ignore if */
+        handlePost(req, res, function (err, flows) {
           if (err) {
-            // eslint-disable-next-line no-console
-            console.log(err);
-          } else {
-            // variable to hold transformed userFlow data (suitable for database insert)
-            var newFlows = [];
-            /* istanbul ignore else */
-            if (userFlows && userFlows.length > 0) {
-              userFlows.forEach(function (newFlow) {
-                newFlows.push({id: newFlow.id, node: newFlow});
-              });
-              // Save newFlows (flows the surrent user tried to save) to DB
-              NodeRedFlows.create(newFlows, req.callContext, function (err, results1) {
-                /* istanbul ignore if */
-                if (err) {
-                  // eslint-disable-next-line no-console
-                  console.log(err);
-                } else {
-                    eventEmitter.emit('reloadNodeRedFlows', uuidv4());
-                }
-                next();
-              });
-
-              // To be able to have flows developed in source-control (Git), as well as to
-              // be able to support migration to production, we also save the flow data
-              // to a file. We do this in non-production mode only.
-              /* istanbul ignore else */
-              if (process.env.NODE_ENV !== 'production') {
-                var flowFilePath = settings.userDir + '/' + settings.flowFile;
-                fs.writeFile(flowFilePath, JSON.stringify(newFlows, null, 4), function (err) {
-                  /* istanbul ignore if */
-                  if (err) {
-                    // eslint-disable-next-line no-console
-                    console.log(err);
-                  }
-                });
-              }
-            }
+            return next(new Error(err));
           }
+          req.body.flows = flows;
+          return next();
         });
-
-
-        // If NR is fetching flows, the request triggers NR to call getFlows()
-        // of the storage module. The getFlows() has to return all flows in the DB, as
-        // NR caches the result and uses the result as the "complete" list of flows to
-        // execute. Since the NR UI should show only the current user's flows, the result
-        // of storage.getFlows() should not be sent as-is as the response of this GET request.
-        // To achieve this, we override the response.send() function, and in its implementation,
-        // we send only the flows belonging to the current user, after querying them from the DB
       } else
       /* istanbul ignore else */
       if (req.method === 'GET') {
@@ -298,7 +316,7 @@ function getSettings(app) {
 
   log.info(TAG, 'Node-RED Admin Role is ' + (app.get('enableNodeRedAdminRole') === true ? 'ENABLED' : 'DISABLED') + ' via setting in server/config.json - enableNodeRedAdminRole: ' + app.get('enableNodeRedAdminRole'));
   log.info(TAG, (app.get('enableNodeRedAdminRole') === true ? 'Only users with nodeRedAdminRoles (see server/config.json)' : 'Any logged in user') + ' can use Node-RED');
-  log.info(TAG, 'Node-RED Starting at http://<this_host>:' + app.get('port') + settings.httpAdminRoot);
+  log.info(TAG, 'Node-RED Starting at http://<this_host>:' + settings.uiPort + settings.httpAdminRoot);
   log.info(TAG, '');
   log.info(TAG, 'See documentation at http://evgit/oec-next/oe-node-red/ for details on oe-node-red settings');
   return settings;

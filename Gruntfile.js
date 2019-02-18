@@ -52,6 +52,9 @@ module.exports = function GruntConfig(grunt) {
     },
 
     mocha_istanbul: {
+      options: {
+        mochaOptions: ['--exit']
+      },
       coverage: {
         src: 'test/test.js',
         options: {
@@ -60,7 +63,7 @@ module.exports = function GruntConfig(grunt) {
             lines: 85,
             statements: 85,
             branches: 50,
-            functions: 85
+            functions: 80
           },
           reportFormats: ['lcov']
         }

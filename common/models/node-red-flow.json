@@ -10,7 +10,7 @@
     "properties": {
         "node" : "object"
     },
-    "mixins" : { "SoftDeleteMixin"  : false },
+    "overridingMixins" : { "SoftDeleteMixin"  : false },
     "validations": [],
     "relations": {},
     "acls": [{

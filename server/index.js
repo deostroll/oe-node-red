@@ -1,1 +1,0 @@
-console.log("oe-node-red loaded");
