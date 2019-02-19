@@ -36,16 +36,16 @@
     "grunt-mocha-test": "0.13.3",
     "istanbul": "0.4.5",
     "mocha": "5.2.0",
-    "oe-cloud": "git+http://evgit/oec-next/oe-cloud.git#master",
-    "oe-multi-tenancy": "git+http://evgit/oec-next/oe-multi-tenancy.git#master",
+    "oe-cloud": "git+http://evgit/oecloud.io/oe-cloud.git#master",
+    "oe-multi-tenancy": "git+http://evgit/oecloud.io/oe-multi-tenancy.git#master",
     "loopback-connector-mongodb": "3.9.2",
-    "oe-connector-postgresql": "git+http://evgit/oec-next/oe-connector-postgresql.git#master",
+    "oe-connector-postgresql": "git+http://evgit/oecloud.io/oe-connector-postgresql.git#master",
     "superagent-defaults": "0.1.14",
     "supertest": "3.4.2"
   },
   "repository": {
     "type": "git",
-    "url": "git@evgit:oec-next/oe-node-red.git"
+    "url": "https://github.com/EdgeVerve/oe-node-red.git"
   },
   "keywords": [
     "oe-node-red",

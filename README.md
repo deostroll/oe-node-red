@@ -11,9 +11,9 @@
 
 <a name="Introduction"></a>
 ## Introduction
-**Node-RED** has been a feature of *oe-cloud* framework for some time now, and it has been widely adopted for its extreme ease of use. 
+**Node-RED** has been a feature of *oe-cloud* framework for some time now, and it has been widely adopted for its extreme ease of use.
 In order to take advantage of new features introduced in newer versions of *Node-RED*, we need to be able to upgrade *Node-RED* easily and seamlessly.
-To this end, *Node-RED* has been separated from the core *oe-cloud* framework and the *Node-RED* integration is now implemented as an 
+To this end, *Node-RED* has been separated from the core *oe-cloud* framework and the *Node-RED* integration is now implemented as an
 optional "app-list" module for the *oe-cloud*-based app. This new module is called **oe-node-red**.
 
 <a name="About the module"></a>
@@ -23,7 +23,7 @@ optional "app-list" module for the *oe-cloud*-based app. This new module is call
 
 This module adds a *loopback* boot-script for starting *Node-RED* as part of the *loopback* app boot-up. It also adds a few loopback models to the app for managing Node-RED data.
 
-The *oe-node-red* module also manages other dependencies like [**oe-node-red-nodes**](http://evgit/oec-next/oe-node-red-nodes), and *Node-RED* itself. 
+The *oe-node-red* module also manages other dependencies like [**oe-node-red-nodes**](http://evgit/oecloud.io/oe-node-red-nodes), and *Node-RED* itself.
 As of now, the *Node-RED* dependency version is changed from 16.x to 18.x, which has various improvements over its predecessors.
 
 **Note**:
@@ -35,10 +35,10 @@ in production.
 <a name="How to add Node-RED feature in oe-cloud -based app"></a>
 ## How to add Node-RED feature in oe-cloud -based app?
 
-To get the *Node-RED* feature in the application, the **oe-node-red** node module needs to be added 
-as a *package.json* dependency in the application. 
+To get the *Node-RED* feature in the application, the **oe-node-red** node module needs to be added
+as a *package.json* dependency in the application.
 
-Also, the module needs be added to the `server/app-list.json` file in the app. 
+Also, the module needs be added to the `server/app-list.json` file in the app.
 
 For e.g.,
 
@@ -52,7 +52,7 @@ package.json  (only part of the file is shown here, with relevant section in bol
        ...
        ...
        ...
-       <b>"oe-node-red": "git+http://evgit/oec-next/oe-node-red.git#master",</b>
+       <b>"oe-node-red": "git+http://evgit/oecloud.io/oe-node-red.git#master",</b>
        ...
        ...
 
@@ -79,7 +79,7 @@ server/app-list.json   (Relevant section in bold):
 <a name="Configuration"></a>
 ### Configuration
 
-The *oe-node-red* module is configured from two files - 
+The *oe-node-red* module is configured from two files -
 
 * server/config.json
 * server/node-red-settings.js
@@ -87,34 +87,34 @@ The *oe-node-red* module is configured from two files -
 <a name="config.json settings"></a>
 #### server/config.json settings
 
-The *oe-node-red* configuration settings in `config.json` are used for high level control, like enabling/disabling *Node-RED*, 
-enabling and setting up Node-RED-admin roles, etc., 
+The *oe-node-red* configuration settings in `config.json` are used for high level control, like enabling/disabling *Node-RED*,
+enabling and setting up Node-RED-admin roles, etc.,
 
-All *oe-node-red* configuration parameters in this file are optional. 
+All *oe-node-red* configuration parameters in this file are optional.
 
 The following are the *oe-node-red* configuration settings possible in the application's `server/config.json` file:
 <pre>
 -------------------------------------------------------------------------------------------------------------------
-setting                  type           default (if not defined)  Description          
+setting                  type           default (if not defined)  Description
 -------------------------------------------------------------------------------------------------------------------
 disableNodered           boolean        false                     Use this to turn off Node-RED (despite having the *oe-node-red* module)
                                                                   by setting this parameter to true. Default is false, i.e., Node-RED is
                                                                   enabled by default. See notes below for corresponding environment variable.
-                                                                  
+
 enableNodeRedAdminRole   boolean        false                     Use this to allow only users having certain roles to access the Node-RED UI
                                                                   by setting this parameter to true. Default is false, which allows all users
                                                                   access to Node-RED UI.
-                                                                  
-nodeRedAdminRoles        string array   ["NODE_RED_ADMIN"]        Use this to setup the names of the roles which have access to the Node-RED UI. 
+
+nodeRedAdminRoles        string array   ["NODE_RED_ADMIN"]        Use this to setup the names of the roles which have access to the Node-RED UI.
                                                                   This setting is used only if enableNodeRedAdminRole is true.
-                                                                  
--------------------------------------------------------------------------------------------------------------------                                                                  
+
+-------------------------------------------------------------------------------------------------------------------
 </pre>
 
 <a name="node-red-settings.js"></a>
 #### server/node-red-settings.js
 
-`server/node-red-settings.js` supports the same parameter settings as *Node-RED's* [`settings.js` file](https://nodered.org/docs/configuration). 
+`server/node-red-settings.js` supports the same parameter settings as *Node-RED's* [`settings.js` file](https://nodered.org/docs/configuration).
 
 *If this file is present, parameters from this file are merged and prioritized over the sane default values mentioned below and the result is taken as Node-RED configuration*
 
@@ -126,9 +126,9 @@ Some of the important settings possible in this file are documented here: https:
 A sample `server/node-red-settings.js` file is provided below:
 
 ```javascript
-module.exports = {                                  // All defaults mentioned below are applicable only   
+module.exports = {                                  // All defaults mentioned below are applicable only
                                                     // if this file (server/node-red-settings.js) is **not present**
-                                             
+
   httpRequestTimeout: 120000,                       // default: not set
   httpAdminRoot: '/red',                            // default: /red
   httpNodeRoot: '/redapi',                          // default: /redapi
@@ -144,13 +144,13 @@ module.exports = {                                  // All defaults mentioned be
 
 ```
 
-This file (`server/node-red-settings.js`) is optional. In its absence, sane defaults as mentioned above are provided by the *oe-node-red* module. 
+This file (`server/node-red-settings.js`) is optional. In its absence, sane defaults as mentioned above are provided by the *oe-node-red* module.
 
 
 <a name="Notes"></a>
 #### Notes
 
-As mentioned above, *Node-RED* integration can be disabled from the `server/config.json`. It can also be disabled by 
+As mentioned above, *Node-RED* integration can be disabled from the `server/config.json`. It can also be disabled by
 setting the environment variable:
 ```console
 DISABLE_NODE_RED=true   (or 1)
@@ -159,7 +159,7 @@ DISABLE_NODE_RED=true   (or 1)
 If `server/node-red-settings.js` is not present, the defaults that are provided are as in the comments above.
 
 As noted earlier, *Node-Red* flows are saved to database whether the app is in production mode or not. A flow data file is also
-persisted to `{userDir}/{flowFile}`. If **production** mode is enabled by setting the environment variable `NODE_ENV` to `production`, 
+persisted to `{userDir}/{flowFile}`. If **production** mode is enabled by setting the environment variable `NODE_ENV` to `production`,
 then the flows won't be persisted to file. Thus, flows would only be saved to database in production.
 
 During development, the flow data file persisted at `{userDir}/{flowFile}` contains data in the same format as the database table
@@ -171,20 +171,20 @@ In this new implementation of *Node-RED* integration, flow-nodes are now stored 
 A record of a node looks like this:
 
 ```json
-{ 
-    "id"   :    "7b279bd6.7b9064", 
-    "node" :    { 
-                    "id" : "7b279bd6.7b9064", 
-                    "type" : "mqtt in", 
-                    "z" : "8a31d1.1fd8ce3", 
-                    "name" : "", 
-                    "topic" : "testtopic", 
-                    "qos" : "2", 
-                    "broker" : "5e5886e3.30a7d8", 
-                    "x" : 190, 
-                    "y" : 160, 
-                    "wires" : [ [ ] ] 
-                } 
+{
+    "id"   :    "7b279bd6.7b9064",
+    "node" :    {
+                    "id" : "7b279bd6.7b9064",
+                    "type" : "mqtt in",
+                    "z" : "8a31d1.1fd8ce3",
+                    "name" : "",
+                    "topic" : "testtopic",
+                    "qos" : "2",
+                    "broker" : "5e5886e3.30a7d8",
+                    "x" : 190,
+                    "y" : 160,
+                    "wires" : [ [ ] ]
+                }
 }
 ```
 So, a flow that contains 10 nodes would be stored as 10 records plus an extra node of type "tab", making a total of 11 records
