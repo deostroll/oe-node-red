@@ -11,7 +11,8 @@
     "test": "mocha test/test.js",
     "lint": "eslint .",
     "fix-lint": "eslint --fix .",
-    "grunt-cover": "grunt test-with-coverage"
+    "grunt-cover": "grunt test-with-coverage",
+    "postinstall": "node postinstall.js"
   },
   "dependencies": {
     "async": "2.6.1",
