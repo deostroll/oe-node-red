@@ -1,25 +1,52 @@
 {
   "name": "oe-node-red",
-  "version": "1.7.0",
+  "version": "2.0.0",
   "description": "This module is an app-list module for oe-Cloud. It provides Node-RED integration for oe-Cloud based applications",
   "engines": {
     "node": ">=6"
   },
   "main": "index.js",
   "scripts": {
+    "pretest": "npm install --no-optional",
+    "test": "mocha test/test.js",
     "lint": "eslint .",
     "fix-lint": "eslint --fix .",
+    "grunt-cover": "grunt test-with-coverage",
     "postinstall": "node postinstall.js"
   },
   "dependencies": {
-    "async": "^2.6.1",
-    "loopback-connector-nodes-for-Node-RED": "git+https://github.com/EdgeVerve/loopback-connector-nodes-for-Node-RED.git#master",
-    "node-red": "~0.18.4",
-    "uuid": "3.1.0"
+    "async": "2.6.1",
+    "node-red": "0.18.6",
+    "uuid": "3.3.2"
+  },
+  "devDependencies": {
+    "babel-eslint": "7.2.3",
+    "chai": "3.4.1",
+    "chai-datetime": "1.4.0",
+    "chai-things": "0.2.0",
+    "chalk": "1.1.1",
+    "eslint": "4.10.0",
+    "grunt": "1.0.3",
+    "grunt-banner": "0.6.0",
+    "grunt-cli": "1.3.2",
+    "grunt-contrib-clean": "2.0.0",
+    "grunt-contrib-copy": "1.0.0",
+    "grunt-jsbeautifier": "0.2.13",
+    "grunt-mkdir": "1.0.0",
+    "grunt-mocha-istanbul": "5.0.2",
+    "grunt-mocha-test": "0.13.3",
+    "istanbul": "0.4.5",
+    "mocha": "5.2.0",
+    "oe-cloud": "2.0.0",
+    "oe-multi-tenancy": "2.0.0",
+    "loopback-connector-mongodb": "3.9.2",
+    "oe-connector-postgresql": "2.0.0",
+    "superagent-defaults": "0.1.14",
+    "supertest": "3.4.2"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EdgeVerve/oe-node-red.git"
+    "url": "https://github.com/EdgeVerve/oe-node-red.git"
   },
   "keywords": [
     "oe-node-red",
