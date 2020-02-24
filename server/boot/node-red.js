@@ -98,13 +98,21 @@ function handlePost(req, res, cb) {
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       var flowFilePath = settings.userDir + '/' + settings.flowFile;
-      fs.writeFile(flowFilePath, JSON.stringify(allflows, null, 4), function (err) {
+      var exportFilePath = settings.userDir + '/export.json';
+      fs.writeFile(flowFilePath, JSON.stringify(allflows.map(function(n) { return {_id: n.id, node: n} }), null, 4), function (err) {
         /* istanbul ignore if */
         if (err) {
           // eslint-disable-next-line no-console
           console.log(err);
         }
       });
+      fs.writeFile(exportFilePath, JSON.stringify(allflows, null, 4), function (err) {
+        /* istanbul ignore if */
+        if (err) {
+          // eslint-disable-next-line no-console
+          console.log(err);
+        }
+      });      
     }
 
     return cb(null, allflows);
