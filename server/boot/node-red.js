@@ -17,6 +17,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const events = require('events');
 const _ = require('lodash');
+var fs = require('fs');
 var eventEmitter = new events.EventEmitter();
 var NodeRedFlows = loopback.getModelByType('NodeRedFlow');
 var settings;
@@ -90,6 +91,22 @@ function handlePost(req, res, cb) {
         allflows.push(item);
       });
     }
+    
+    // To be able to have flows developed in source-control (Git), as well as to
+    // be able to support migration to production, we also save the flow data
+    // to a file. We do this in non-production mode only.
+    /* istanbul ignore else */
+    if (process.env.NODE_ENV !== 'production') {
+      var flowFilePath = settings.userDir + '/' + settings.flowFile;
+      fs.writeFile(flowFilePath, JSON.stringify(allflows, null, 4), function (err) {
+        /* istanbul ignore if */
+        if (err) {
+          // eslint-disable-next-line no-console
+          console.log(err);
+        }
+      });
+    }
+
     return cb(null, allflows);
   });
 }
