@@ -1,6 +1,6 @@
 {
   "name": "oe-node-red",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "This module is an app-list module for oe-Cloud. It provides Node-RED integration for oe-Cloud based applications",
   "engines": {
     "node": ">=6"
