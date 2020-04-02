@@ -131,15 +131,15 @@ describe(chalk.blue('oe-node-red-test'), function (done) {
   it(testName4, function (done) {
     var TAG = '[ it ' + testName4 + ' ]';
     console.log(chalk.yellow('[' + new Date().toISOString() + ']      : ', 'Starting ' + TAG));
-    var postUrl = '/red/library/flows/test'; // API to post flow library
+    var postUrl = '/red/library/local/flows/test'; // API to post flow library
     api.set('Content-Type', 'application/json')
       .set('Node-RED-API-Version', 'v2')
       .post(postUrl)
       .send([]) // payload for posting flows
       .end(function (err, response) {
         expect(err).not.to.be.defined; // Expect no error upon calling API
-        expect(response.statusCode).to.equal(500); // Expect 500 error response
-        expect(response.body.message).to.equal('Library is disabled'); // Expect correct error message
+        expect(response.statusCode).to.equal(400); // Expect 400 error response
+        expect(response.body.message).to.equal('Error'); // Expect correct error message
         done();
       });
   });
@@ -149,7 +149,7 @@ describe(chalk.blue('oe-node-red-test'), function (done) {
   it(testName5, function (done) {
     var TAG = '[ it ' + testName5 + ' ]';
     console.log(chalk.yellow('[' + new Date().toISOString() + ']      : ', 'Starting ' + TAG));
-    var getUrl = '/red/library/flows'; // API to get flow library
+    var getUrl = '/red/library/local/flows'; // API to get flow library
     api.set('Content-Type', 'application/json')
       .set('Node-RED-API-Version', 'v2')
       .get(getUrl)
