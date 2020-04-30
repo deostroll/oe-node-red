@@ -4,6 +4,7 @@
     },
     {
       "path": "oe-multi-tenancy",
+      "autoEnableMixins" : true,
       "enabled": true
     },
     {
