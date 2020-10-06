@@ -87,7 +87,7 @@ The *oe-node-red* module is configured from two files -
 <a name="config.json settings"></a>
 #### server/config.json settings
 
-The *oe-node-red* configuration settings in `config.json` are used for high level control, like enabling/disabling *Node-RED*,
+The *oe-node-red* configuration settings in the application's `config.json` are used for high level control, like enabling/disabling *Node-RED*,
 enabling and setting up Node-RED-admin roles, etc.,
 
 All *oe-node-red* configuration parameters in this file are optional.
@@ -114,7 +114,7 @@ nodeRedAdminRoles        string array   ["NODE_RED_ADMIN"]        Use this to se
 <a name="node-red-settings.js"></a>
 #### server/node-red-settings.js
 
-`server/node-red-settings.js` supports the same parameter settings as *Node-RED's* [`settings.js` file](https://nodered.org/docs/configuration).
+The application's `server/node-red-settings.js` supports the same parameter settings as *Node-RED's* [`settings.js` file](https://nodered.org/docs/configuration).
 
 *If this file is present, parameters from this file are merged and prioritized over the sane default values mentioned below and the result is taken as Node-RED configuration*
 
@@ -144,7 +144,7 @@ module.exports = {                                  // All defaults mentioned be
 
 ```
 
-This file (`server/node-red-settings.js`) is optional. In its absence, sane defaults as mentioned above are provided by the *oe-node-red* module.
+This file (`server/node-red-settings.js`) in the application is optional. In its absence, sane defaults as mentioned above are provided by the *oe-node-red* module.
 
 
 <a name="Notes"></a>

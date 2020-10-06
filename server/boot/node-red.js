@@ -17,6 +17,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const events = require('events');
 const _ = require('lodash');
+var fs = require('fs');
 var eventEmitter = new events.EventEmitter();
 var NodeRedFlows = loopback.getModelByType('NodeRedFlow');
 var settings;
@@ -90,6 +91,30 @@ function handlePost(req, res, cb) {
         allflows.push(item);
       });
     }
+
+    // To be able to have flows developed in source-control (Git), as well as to
+    // be able to support migration to production, we also save the flow data
+    // to a file. We do this in non-production mode only.
+    /* istanbul ignore else */
+    if (process.env.NODE_ENV !== 'production') {
+      var flowFilePath = settings.userDir + '/' + settings.flowFile;
+      var exportFilePath = settings.userDir + '/export.json';
+      fs.writeFile(flowFilePath, JSON.stringify(allflows.map(function (n) { return { _id: n.id, node: n }; }), null, 4), function (err) {
+        /* istanbul ignore if */
+        if (err) {
+          // eslint-disable-next-line no-console
+          console.log(err);
+        }
+      });
+      fs.writeFile(exportFilePath, JSON.stringify(allflows, null, 4), function (err) {
+        /* istanbul ignore if */
+        if (err) {
+          // eslint-disable-next-line no-console
+          console.log(err);
+        }
+      });
+    }
+
     return cb(null, allflows);
   });
 }
@@ -151,7 +176,7 @@ function initApp(app) {
     var nodeRedAdminRoles = app.get('nodeRedAdminRoles') ? app.get('nodeRedAdminRoles') : ['NODE_RED_ADMIN'];
     app.use(function (req, res, next) {
       // Apply admin check only for URLs beginning with httpAdminRoot(default: /red)
-      if (req.url.startsWith(settings.httpAdminRoot) &&  !isNodeRedAdmin(req, nodeRedAdminRoles)) {
+      if (req.url.startsWith(settings.httpAdminRoot) && !isNodeRedAdmin(req, nodeRedAdminRoles)) {
         /* istanbul ignore next */
         logError();
         return res.status(401).json({
@@ -281,7 +306,7 @@ function getSettings(app) {
     userDir: userDir,
     nodesDir: '../nodes',
     flowFile: 'node-red-flows.json',
-    editorTheme: { palette: { editable: false }},
+    editorTheme: { palette: { editable: false } },
     flowFilePretty: true,
     credentialSecret: 'my-random-string',
     functionGlobalContext: {
@@ -304,21 +329,21 @@ function getSettings(app) {
   }
 
   /* istanbul ignore else */
-  if (!settings.logging) {settings.logging = { 'oe-logger': { handler: initLogger }};}
+  if (!settings.logging) { settings.logging = { 'oe-logger': { handler: initLogger } }; }
 
   /* istanbul ignore else */
-  if (!settings.server) {settings.server = app;}
+  if (!settings.server) { settings.server = app; }
 
   // We're always saving flows to DB, but parallely will save to file too for source-control and migration needs.
   var storageModulePath = '../../lib/oe-node-red-storage';
   /* istanbul ignore else */
-  if (!settings.storageModule) {settings.storageModule = require(storageModulePath);}
+  if (!settings.storageModule) { settings.storageModule = require(storageModulePath); }
 
   log.info(TAG, 'Node-RED Admin Role is ' + (app.get('enableNodeRedAdminRole') === true ? 'ENABLED' : 'DISABLED') + ' via setting in server/config.json - enableNodeRedAdminRole: ' + app.get('enableNodeRedAdminRole'));
   log.info(TAG, (app.get('enableNodeRedAdminRole') === true ? 'Only users with nodeRedAdminRoles (see server/config.json)' : 'Any logged in user') + ' can use Node-RED');
   log.info(TAG, 'Node-RED Starting at http://<this_host>:' + settings.uiPort + settings.httpAdminRoot);
   log.info(TAG, '');
-  log.info(TAG, 'See documentation at https://github.com/EdgeVerve/oe-node-red/ for details on oe-node-red settings');
+  log.info(TAG, 'See documentation at http://github/EdgeVerve/oe-node-red/ for details on oe-node-red settings');
   return settings;
 }
 
@@ -351,7 +376,7 @@ function isNodeRedAdmin(req, nodeRedAdminRoles) {
 function initLogger(settings) {
   // Logs message as per log level
   function logger(msg) {
-    var levelNames = {  10: 'fatal', 20: 'error', 30: 'warn', 40: 'info', 50: 'debug', 60: 'trace', 98: 'audit', 99: 'metric'};
+    var levelNames = { 10: 'fatal', 20: 'error', 30: 'warn', 40: 'info', 50: 'debug', 60: 'trace', 98: 'audit', 99: 'metric' };
     var level = levelNames[msg.level];
     /* istanbul ignore next */
     switch (level) {
@@ -385,3 +410,5 @@ function initLogger(settings) {
   }
   return logger;
 }
+
+
